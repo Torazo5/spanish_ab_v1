@@ -1,16 +1,17 @@
 import { NextRequest } from 'next/server'
 import { groq, MODELS } from '@/lib/groq'
-import { OBSERVER_SYSTEM_PROMPT, observerUserPrompt } from '@/lib/prompts/oral'
+import { getObserverSystemPrompt, observerUserPrompt } from '@/lib/prompts/oral'
 import type { ConversationMessage } from '@/lib/types'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
 
 export async function POST(req: NextRequest) {
-  const { userMessage, conversationHistory, turnNumber } = (await req.json()) as {
+  const { userMessage, conversationHistory, turnNumber, speechMode = 'natural' } = (await req.json()) as {
     userMessage: string
     conversationHistory: ConversationMessage[]
     turnNumber: number
+    speechMode?: 'natural' | 'strict'
   }
 
   // Get the last thing María said so the observer knows what question the student is answering
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
   const response = await groq.chat.completions.create({
     model: MODELS.observer,
     messages: [
-      { role: 'system', content: OBSERVER_SYSTEM_PROMPT },
+      { role: 'system', content: getObserverSystemPrompt(speechMode) },
       { role: 'user', content: observerUserPrompt(userMessage, turnNumber, lastAssistant?.content) },
     ],
     max_tokens: 600,

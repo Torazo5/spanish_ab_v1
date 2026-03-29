@@ -95,7 +95,7 @@ export function useOralSession(
 
   // Process a user's recorded audio blob
   const processUserTurn = useCallback(
-    async (audioBlob: Blob, topic: IbTopic) => {
+    async (audioBlob: Blob, topic: IbTopic, speechMode: 'natural' | 'strict' = 'natural') => {
       onStopSpeaking()
       setPhase('transcribing')
 
@@ -135,6 +135,7 @@ export function useOralSession(
               userMessage: transcript,
               conversationHistory: currentHistory,
               turnNumber,
+              speechMode,
             }),
           })
           const reader = res.body!.getReader()

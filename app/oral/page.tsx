@@ -23,15 +23,17 @@ export default function OralPage() {
   const { speak, stop: stopSpeaking } = useSpeechSynthesis()
   const session = useOralSession(speak, stopSpeaking)
 
-  // Use a ref so the callback always sees the latest topic/session without stale closure issues
+  // Use a ref so the callback always sees the latest topic/session/speechMode without stale closure issues
   const topicRef = useRef(topic)
   topicRef.current = topic
+  const speechModeRef = useRef(speechMode)
+  speechModeRef.current = speechMode
   const sessionRef = useRef(session)
   sessionRef.current = session
 
   const handleBlobReady = useCallback(async (blob: Blob) => {
     try {
-      await sessionRef.current.processUserTurn(blob, topicRef.current)
+      await sessionRef.current.processUserTurn(blob, topicRef.current, speechModeRef.current)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to process audio')
     }
