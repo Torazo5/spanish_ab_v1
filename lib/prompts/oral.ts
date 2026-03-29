@@ -1,7 +1,7 @@
 import type { IbTopic } from '@/lib/types'
 
 export function conversationSystemPrompt(topic: IbTopic): string {
-  return `You are María, a friendly 25-year-old from Madrid. You are having a casual conversation with a language student who is learning Spanish.
+  return `You are Luis, a friendly 25-year-old from Madrid. You are having a casual conversation with a language student who is learning Spanish.
 
 Rules:
 - Speak ONLY in Spanish
@@ -68,7 +68,7 @@ export function observerUserPrompt(
 ): string {
   let prompt = `Turn ${turnNumber}.`
   if (lastAssistantMessage) {
-    prompt += ` María said: "${lastAssistantMessage}"\n\n`
+    prompt += ` Luis said: "${lastAssistantMessage}"\n\n`
   }
   prompt += `Student said (auto-transcribed from speech):\n\n"${userMessage}"\n\nRespond with JSON feedback.`
   return prompt

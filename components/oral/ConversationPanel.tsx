@@ -30,7 +30,7 @@ export function ConversationPanel({ history, streamingText }: Props) {
             }`}
           >
             {msg.role === 'assistant' && (
-              <span className="text-xs font-medium text-zinc-400 block mb-0.5">María</span>
+              <span className="text-xs font-medium text-zinc-400 block mb-0.5">Luis</span>
             )}
             {msg.content}
           </div>
@@ -40,7 +40,7 @@ export function ConversationPanel({ history, streamingText }: Props) {
       {streamingText && (
         <div className="flex justify-start">
           <div className="max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm leading-relaxed bg-zinc-800 text-zinc-100">
-            <span className="text-xs font-medium text-zinc-400 block mb-0.5">María</span>
+            <span className="text-xs font-medium text-zinc-400 block mb-0.5">Luis</span>
             {streamingText}
             <span className="inline-block w-1.5 h-3.5 ml-0.5 bg-zinc-400 animate-pulse rounded-sm" />
           </div>

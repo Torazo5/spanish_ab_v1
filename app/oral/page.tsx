@@ -18,6 +18,7 @@ export default function OralPage() {
   const [sessionStarted, setSessionStarted] = useState(false)
   const [showTranscript, setShowTranscript] = useState(true)
   const [speechMode, setSpeechMode] = useState<'natural' | 'strict'>('natural')
+  const [autoCollapse, setAutoCollapse] = useState(true)
   const [error, setError] = useState('')
 
   const { speak, stop: stopSpeaking } = useSpeechSynthesis()
@@ -60,7 +61,7 @@ export default function OralPage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-white flex flex-col">
+    <main className="h-screen bg-zinc-950 text-white flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
         <div className="flex items-center gap-3">
@@ -113,7 +114,7 @@ export default function OralPage() {
                   }`}
                 >
                   <div className="font-semibold">With text</div>
-                  <div className="text-[11px] text-zinc-400 mt-0.5">See your words</div>
+                  <div className="text-[11px] text-zinc-400 mt-0.5">Show your transcript</div>
                 </button>
                 <button
                   onClick={() => setShowTranscript(false)}
@@ -124,7 +125,7 @@ export default function OralPage() {
                   }`}
                 >
                   <div className="font-semibold">No text</div>
-                  <div className="text-[11px] text-zinc-400 mt-0.5">Audio only</div>
+                  <div className="text-[11px] text-zinc-400 mt-0.5">Hide your transcript</div>
                 </button>
               </div>
             </div>
@@ -211,6 +212,16 @@ export default function OralPage() {
                 {speechMode === 'natural' ? 'Natural' : 'Strict'}
               </button>
               <button
+                onClick={() => setAutoCollapse((v) => !v)}
+                className={`text-xs px-2.5 py-1 rounded-md border font-medium transition-all ${
+                  autoCollapse
+                    ? 'bg-zinc-700 border-zinc-600 text-zinc-200'
+                    : 'bg-zinc-800 border-zinc-700 text-zinc-500 hover:text-zinc-300'
+                }`}
+              >
+                {autoCollapse ? 'Collapse old' : 'Show all'}
+              </button>
+              <button
                 onClick={() => setShowTranscript((v) => !v)}
                 className={`text-xs px-2.5 py-1 rounded-md border font-medium transition-all ${
                   showTranscript
@@ -242,7 +253,7 @@ export default function OralPage() {
               <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-3">
                 Tutor&apos;s Notes
               </h2>
-              <ObserverPanel feedbackHistory={session.feedbackHistory} />
+              <ObserverPanel feedbackHistory={session.feedbackHistory} autoCollapse={autoCollapse} />
             </div>
           </div>
 

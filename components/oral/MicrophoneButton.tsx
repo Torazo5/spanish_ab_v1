@@ -58,7 +58,7 @@ export function MicrophoneButton({ isRecording, phase, secondsLeft, onStart, onS
         )}
         {isProcessing && <span className="animate-pulse">Analyzing...</span>}
         {isWaiting && !isRecording && <span>Press mic to speak</span>}
-        {phase === 'ai-speaking' && <span>María is speaking...</span>}
+        {phase === 'ai-speaking' && <span>Luis is speaking...</span>}
         {phase === 'idle' && <span>Select a topic to start</span>}
       </div>
     </div>

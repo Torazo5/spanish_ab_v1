@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     speechMode?: 'natural' | 'strict'
   }
 
-  // Get the last thing María said so the observer knows what question the student is answering
+  // Get the last thing Luis said so the observer knows what question the student is answering
   const lastAssistant = [...conversationHistory].reverse().find((m) => m.role === 'assistant')
 
   const response = await groq.chat.completions.create({

@@ -36,7 +36,7 @@ All routes use `runtime = 'nodejs'` and `maxDuration = 30`. Streaming routes ret
 - `listening/generate-script` — Groq Llama generates a Spanish script + 5 questions as JSON
 - `listening/check-answers` — Groq Llama grades answers as JSON
 - `oral/transcribe` — Groq Whisper (`whisper-large-v3-turbo`), accepts `FormData` with an audio blob
-- `oral/conversation` — SSE stream, Llama `llama-3.1-8b-instant` acting as "María"
+- `oral/conversation` — SSE stream, Llama `llama-3.1-8b-instant` acting as "Luis"
 - `oral/observe` — non-streaming, Llama `llama-3.3-70b-versatile` returns structured JSON feedback, then emits it as a single SSE event
 - `tts` — Microsoft Edge TTS via `msedge-tts` package (`es-ES-AlvaroNeural`), returns MP3 stream. The `MsEdgeTTS` instance is module-level cached and reset on error.
 

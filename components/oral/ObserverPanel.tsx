@@ -1,6 +1,6 @@
 'use client'
-import { useMemo, useState } from 'react'
-import { X } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronDown } from 'lucide-react'
 import type { ObserverFeedback, GrammarError } from '@/lib/types'
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -20,8 +20,19 @@ const SEVERITY_STYLES: Record<string, string> = {
  * Highlights only the words that differ between original and correction.
  */
 function DiffHighlight({ original, correction }: { original: string; correction: string }) {
+  const trimmedCorrection = correction.trim()
+
+  // If the correction is empty or identical to the original, just show the original in red
+  if (!trimmedCorrection || trimmedCorrection.toLowerCase() === original.trim().toLowerCase()) {
+    return (
+      <span className="text-sm bg-red-500/20 px-1.5 py-0.5 rounded text-red-300 font-bold">
+        {original}
+      </span>
+    )
+  }
+
   const origWords = original.split(/\s+/)
-  const corrWords = correction.split(/\s+/)
+  const corrWords = trimmedCorrection.split(/\s+/)
   const maxLen = Math.max(origWords.length, corrWords.length)
 
   // Find which original words differ from the correction
@@ -129,11 +140,22 @@ function AnnotatedMessage({ message, errors }: { message: string; errors: Gramma
 
 interface Props {
   feedbackHistory: ObserverFeedback[]
+  autoCollapse?: boolean
 }
 
-export function ObserverPanel({ feedbackHistory }: Props) {
+export function ObserverPanel({ feedbackHistory, autoCollapse = false }: Props) {
   // Track dismissed errors by "turnNumber-errorIndex"
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
+  // Track manually expanded/collapsed turns (overrides autoCollapse)
+  const [manualToggle, setManualToggle] = useState<Record<number, boolean>>({})
+  // Reset manual toggles when a new turn arrives so auto-collapse kicks in
+  const prevLength = useRef(feedbackHistory.length)
+  useEffect(() => {
+    if (feedbackHistory.length > prevLength.current) {
+      setManualToggle({})
+    }
+    prevLength.current = feedbackHistory.length
+  }, [feedbackHistory.length])
 
   const dismiss = (key: string) => {
     setDismissed((prev) => new Set(prev).add(key))
@@ -147,76 +169,124 @@ export function ObserverPanel({ feedbackHistory }: Props) {
     )
   }
 
+  const latestTurn = Math.max(...feedbackHistory.map((fb) => fb.turnNumber))
+
   return (
-    <div className="flex flex-col gap-5 overflow-y-auto flex-1 pr-1">
+    <div className="flex flex-col gap-3 overflow-y-auto flex-1 pr-1">
       {[...feedbackHistory].reverse().map((fb) => {
+        const isCurrent = fb.turnNumber === latestTurn
         const visibleErrors = fb.errors.filter(
           (_, i) => !dismissed.has(`${fb.turnNumber}-${i}`)
         )
 
+        // Determine if this turn's content is expanded
+        const isExpanded = manualToggle[fb.turnNumber] ?? (autoCollapse ? isCurrent : true)
+
+        const errorCount = visibleErrors.length
+
         return (
-          <div key={fb.turnNumber} className="border border-zinc-700/60 rounded-xl p-4 space-y-3">
-            <div className="text-[11px] text-zinc-500 font-medium">Turn {fb.turnNumber}</div>
-
-            {/* Original message with inline error highlights */}
-            {fb.originalMessage && (
-              <div className="bg-zinc-900/80 rounded-lg p-3">
-                <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1.5">You said</div>
-                <AnnotatedMessage message={fb.originalMessage} errors={visibleErrors} />
+          <div
+            key={fb.turnNumber}
+            className={`rounded-xl p-4 space-y-3 transition-colors ${
+              isCurrent
+                ? 'border-2 border-blue-500/40 bg-blue-950/10'
+                : 'border border-zinc-700/60'
+            }`}
+          >
+            {/* Turn header — clickable to expand/collapse */}
+            <button
+              onClick={() => setManualToggle((prev) => ({ ...prev, [fb.turnNumber]: !isExpanded }))}
+              className="w-full flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-zinc-500 font-medium">Turn {fb.turnNumber}</span>
+                {isCurrent && (
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-semibold uppercase tracking-wider">
+                    Latest
+                  </span>
+                )}
+                {!isExpanded && errorCount > 0 && (
+                  <span className="text-[10px] text-red-400">
+                    {errorCount} error{errorCount !== 1 ? 's' : ''}
+                  </span>
+                )}
+                {!isExpanded && errorCount === 0 && !fb.generalFeedback && (
+                  <span className="text-[10px] text-green-400">No errors</span>
+                )}
               </div>
-            )}
+              <ChevronDown className={`w-3.5 h-3.5 text-zinc-500 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+            </button>
 
-            {/* Individual error cards */}
-            {visibleErrors.length > 0 && (
-              <div className="space-y-2">
-                {fb.errors.map((err, i) => {
-                  const key = `${fb.turnNumber}-${i}`
-                  if (dismissed.has(key)) return null
-                  return (
-                    <div
-                      key={i}
-                      className={`bg-zinc-900/60 rounded-lg p-3 border-l-2 ${SEVERITY_STYLES[err.severity] ?? 'border-l-zinc-600'}`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <DiffHighlight original={err.original} correction={err.correction} />
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${CATEGORY_COLORS[err.category] ?? 'bg-zinc-700 text-zinc-300'}`}>
-                            {err.category}
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => dismiss(key)}
-                          className="shrink-0 text-zinc-600 hover:text-red-400 transition-colors p-0.5 rounded hover:bg-zinc-800"
-                          title="Dismiss — this feedback is incorrect"
+            {isExpanded && (
+              <>
+                {/* Original message with inline error highlights */}
+                {fb.originalMessage && (
+                  <div className="bg-zinc-900/80 rounded-lg p-3">
+                    <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1.5">You said</div>
+                    <AnnotatedMessage message={fb.originalMessage} errors={visibleErrors} />
+                  </div>
+                )}
+
+                {/* Individual error cards */}
+                {visibleErrors.length > 0 && (
+                  <div className="space-y-2">
+                    {fb.errors.map((err, i) => {
+                      const key = `${fb.turnNumber}-${i}`
+                      if (dismissed.has(key)) return null
+                      return (
+                        <div
+                          key={i}
+                          className={`bg-zinc-900/60 rounded-lg p-3 border-l-2 flex gap-3 ${SEVERITY_STYLES[err.severity] ?? 'border-l-zinc-600'}`}
                         >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                      <p className="text-zinc-400 text-xs leading-relaxed mt-1.5">{err.explanation}</p>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                              <DiffHighlight original={err.original} correction={err.correction} />
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${CATEGORY_COLORS[err.category] ?? 'bg-zinc-700 text-zinc-300'}`}>
+                                {err.category}
+                              </span>
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
+                                err.severity === 'major'
+                                  ? 'bg-red-500/20 text-red-400'
+                                  : 'bg-yellow-500/20 text-yellow-400'
+                              }`}>
+                                {err.severity}
+                              </span>
+                            </div>
+                            <p className="text-zinc-400 text-xs leading-relaxed">{err.explanation}</p>
+                          </div>
+                          <button
+                            onClick={() => dismiss(key)}
+                            title="This feedback is incorrect — dismiss it"
+                            className="shrink-0 self-center text-[10px] px-2 py-1 rounded border border-zinc-700 text-zinc-500 hover:border-red-500/50 hover:text-red-400 hover:bg-red-500/10 transition-colors font-medium"
+                          >
+                            Dismiss
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
 
-            {/* Corrected version */}
-            {fb.correctedSentence && (
-              <div className="bg-zinc-900/50 rounded-lg p-3">
-                <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1.5">Corrected</div>
-                <p className="text-green-200 text-sm leading-relaxed">{fb.correctedSentence}</p>
-              </div>
-            )}
+                {/* Corrected version */}
+                {fb.correctedSentence && (
+                  <div className="bg-zinc-900/50 rounded-lg p-3">
+                    <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1.5">Corrected</div>
+                    <p className="text-green-200 text-sm leading-relaxed">{fb.correctedSentence}</p>
+                  </div>
+                )}
 
-            {/* General feedback */}
-            {fb.generalFeedback && (
-              <div className="bg-amber-950/40 border border-amber-800/30 rounded-lg p-3">
-                <div className="text-[10px] text-amber-400 uppercase tracking-wider mb-1.5">Feedback</div>
-                <p className="text-amber-200 text-xs leading-relaxed">{fb.generalFeedback}</p>
-              </div>
-            )}
+                {/* General feedback */}
+                {fb.generalFeedback && (
+                  <div className="bg-amber-950/40 border border-amber-800/30 rounded-lg p-3">
+                    <div className="text-[10px] text-amber-400 uppercase tracking-wider mb-1.5">Feedback</div>
+                    <p className="text-amber-200 text-xs leading-relaxed">{fb.generalFeedback}</p>
+                  </div>
+                )}
 
-            {visibleErrors.length === 0 && !fb.generalFeedback && (
-              <p className="text-green-400 text-xs">No errors detected</p>
+                {visibleErrors.length === 0 && !fb.generalFeedback && (
+                  <p className="text-green-400 text-xs">No errors detected</p>
+                )}
+              </>
             )}
           </div>
         )
