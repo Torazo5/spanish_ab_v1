@@ -43,6 +43,7 @@ export interface GrammarError {
 }
 
 export interface ObserverFeedback {
+  originalMessage: string
   correctedSentence: string
   errors: GrammarError[]
   generalFeedback: string | null

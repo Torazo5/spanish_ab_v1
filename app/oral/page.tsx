@@ -1,7 +1,7 @@
 'use client'
 import { useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Mic, RotateCcw } from 'lucide-react'
+import { ArrowLeft, Mic, RotateCcw, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ConversationPanel } from '@/components/oral/ConversationPanel'
@@ -17,6 +17,7 @@ export default function OralPage() {
   const [topic, setTopic] = useState<IbTopic>('school')
   const [sessionStarted, setSessionStarted] = useState(false)
   const [showTranscript, setShowTranscript] = useState(true)
+  const [speechMode, setSpeechMode] = useState<'natural' | 'strict'>('natural')
   const [error, setError] = useState('')
 
   const { speak, stop: stopSpeaking } = useSpeechSynthesis()
@@ -126,6 +127,51 @@ export default function OralPage() {
               </div>
             </div>
 
+            {/* Speech mode selector */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-zinc-400">Feedback strictness</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setSpeechMode('natural')}
+                  className={`px-3 py-2.5 rounded-lg text-sm font-medium border transition-all active:scale-95 text-left ${
+                    speechMode === 'natural'
+                      ? 'bg-zinc-700 border-zinc-500 text-white'
+                      : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-750 hover:text-zinc-300'
+                  }`}
+                >
+                  <div className="font-semibold flex items-center gap-1.5">
+                    Natural speech
+                    <span className="relative group">
+                      <Info className="w-3 h-3 text-zinc-500" />
+                      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-[11px] text-zinc-300 leading-relaxed opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-10">
+                        Ignores stutters, repetitions, and self-corrections that are common in spoken language. Only flags actual grammar mistakes.
+                      </span>
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-zinc-400 mt-0.5">Ignore stutters</div>
+                </button>
+                <button
+                  onClick={() => setSpeechMode('strict')}
+                  className={`px-3 py-2.5 rounded-lg text-sm font-medium border transition-all active:scale-95 text-left ${
+                    speechMode === 'strict'
+                      ? 'bg-zinc-700 border-zinc-500 text-white'
+                      : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-750 hover:text-zinc-300'
+                  }`}
+                >
+                  <div className="font-semibold flex items-center gap-1.5">
+                    Strict
+                    <span className="relative group">
+                      <Info className="w-3 h-3 text-zinc-500" />
+                      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-[11px] text-zinc-300 leading-relaxed opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-10">
+                        Flags all errors including hesitations, false starts, and repeated words. Best for polished speaking practice.
+                      </span>
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-zinc-400 mt-0.5">Flag everything</div>
+                </button>
+              </div>
+            </div>
+
             {!recorder.permissionGranted && (
               <p className="text-xs text-yellow-400">
                 Microphone permission needed. Allow access when prompted.
@@ -151,22 +197,34 @@ export default function OralPage() {
             <span className="text-xs text-zinc-500">
               Topic: <span className="text-zinc-300">{IB_TOPICS.find((t) => t.value === topic)?.label}</span>
             </span>
-            <button
-              onClick={() => setShowTranscript((v) => !v)}
-              className={`text-xs px-2.5 py-1 rounded-md border font-medium transition-all ${
-                showTranscript
-                  ? 'bg-zinc-700 border-zinc-600 text-zinc-200'
-                  : 'bg-zinc-800 border-zinc-700 text-zinc-500 hover:text-zinc-300'
-              }`}
-            >
-              {showTranscript ? 'Text on' : 'Text off'}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSpeechMode((m) => m === 'natural' ? 'strict' : 'natural')}
+                className={`text-xs px-2.5 py-1 rounded-md border font-medium transition-all ${
+                  speechMode === 'natural'
+                    ? 'bg-zinc-700 border-zinc-600 text-zinc-200'
+                    : 'bg-amber-900/50 border-amber-700/50 text-amber-300'
+                }`}
+              >
+                {speechMode === 'natural' ? 'Natural' : 'Strict'}
+              </button>
+              <button
+                onClick={() => setShowTranscript((v) => !v)}
+                className={`text-xs px-2.5 py-1 rounded-md border font-medium transition-all ${
+                  showTranscript
+                    ? 'bg-zinc-700 border-zinc-600 text-zinc-200'
+                    : 'bg-zinc-800 border-zinc-700 text-zinc-500 hover:text-zinc-300'
+                }`}
+              >
+                {showTranscript ? 'Text on' : 'Text off'}
+              </button>
+            </div>
           </div>
 
           {/* Main split layout */}
           <div className="flex-1 flex overflow-hidden">
             {/* Conversation panel (left) */}
-            <div className="flex-[3] flex flex-col p-4 overflow-hidden border-r border-zinc-800">
+            <div className="flex-[2] flex flex-col p-4 overflow-hidden border-r border-zinc-800">
               <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-3">
                 Conversation
               </h2>
@@ -178,7 +236,7 @@ export default function OralPage() {
             </div>
 
             {/* Observer panel (right) */}
-            <div className="flex-[2] flex flex-col p-4 overflow-hidden">
+            <div className="flex-[3] flex flex-col p-4 overflow-hidden">
               <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-3">
                 Tutor&apos;s Notes
               </h2>

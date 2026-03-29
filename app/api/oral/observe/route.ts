@@ -35,14 +35,16 @@ export async function POST(req: NextRequest) {
       try {
         const feedback = JSON.parse(jsonText)
         // Strip errors that are capitalization/accent-only differences
+        const normalize = (s: string) =>
+          s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
         if (Array.isArray(feedback.errors)) {
           feedback.errors = feedback.errors.filter(
             (e: { original: string; correction: string }) =>
-              e.original.toLowerCase() !== e.correction.toLowerCase()
+              normalize(e.original) !== normalize(e.correction)
           )
         }
         controller.enqueue(
-          encoder.encode(`event: feedback\ndata: ${JSON.stringify({ ...feedback, turnNumber })}\n\n`)
+          encoder.encode(`event: feedback\ndata: ${JSON.stringify({ ...feedback, originalMessage: userMessage, turnNumber })}\n\n`)
         )
       } catch {
         // If JSON parsing fails, send a minimal fallback
