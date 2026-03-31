@@ -14,7 +14,7 @@
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: Generation Foundation** - AI generates authentic, mark-configurable, mixed-type question sets as structured JSON
+- [x] **Phase 1: Generation Foundation** - AI generates authentic, mark-configurable, mixed-type question sets as structured JSON (completed 2026-03-31)
 - [ ] **Phase 2: Question Type UI** - All 5 IB question types are renderable and interactive in the browser
 - [ ] **Phase 3: Grading** - Deterministic types graded client-side; open-ended and gap-fill graded by AI with feedback
 - [ ] **Phase 4: Transcript & Review** - Full transcript reveal available at any time; post-submit review mode for learning
@@ -30,10 +30,10 @@
   2. The generated question set contains questions whose mark values sum to the selected total
   3. Every generated session contains at least one MCQ, at least one True/False/Not Given, and at least one of gap-fill, icon-matching, or person-attribution
   4. Generated questions read at IB Ab Initio level — concise Spanish script, questions that require listening comprehension to answer
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 01-01-PLAN.md — Define typed question schema and rewrite generation prompt for mixed-type mark-balanced output
-- [ ] 01-02-PLAN.md — Add MarkSelector UI to listening page and wire marks to API
+- [x] 01-02-PLAN.md — Add MarkSelector UI to listening page and wire marks to API
 
 ### Phase 2: Question Type UI
 **Goal**: All 5 IB question types are rendered as distinct interactive components a user can engage with in the browser
@@ -77,7 +77,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 1. Generation Foundation | v1.1 | 1/2 | In Progress|  |
+| 1. Generation Foundation | v1.1 | 2/2 | Complete   | 2026-03-31 |
 | 2. Question Type UI | v1.1 | 0/TBD | Not started | - |
 | 3. Grading | v1.1 | 0/TBD | Not started | - |
 | 4. Transcript & Review | v1.1 | 0/TBD | Not started | - |
