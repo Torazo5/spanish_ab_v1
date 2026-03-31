@@ -53,21 +53,21 @@ Requirements for milestone v1.1: IB-Authentic Listening Practice.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LISTEN-01 | TBD | Pending |
-| LISTEN-02 | TBD | Pending |
-| LISTEN-03 | TBD | Pending |
-| LISTEN-04 | TBD | Pending |
-| LISTEN-05 | TBD | Pending |
-| LISTEN-06 | TBD | Pending |
-| LISTEN-07 | TBD | Pending |
-| LISTEN-08 | TBD | Pending |
-| LISTEN-09 | TBD | Pending |
+| LISTEN-01 | Phase 2 | Pending |
+| LISTEN-02 | Phase 3 | Pending |
+| LISTEN-03 | Phase 3 | Pending |
+| LISTEN-04 | Phase 2 | Pending |
+| LISTEN-05 | Phase 2 | Pending |
+| LISTEN-06 | Phase 4 | Pending |
+| LISTEN-07 | Phase 4 | Pending |
+| LISTEN-08 | Phase 1 | Pending |
+| LISTEN-09 | Phase 1 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 9 total
-- Mapped to phases: 0 (roadmap pending)
-- Unmapped: 9 ⚠️
+- Mapped to phases: 9
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-31*
-*Last updated: 2026-03-31 after initial definition*
+*Last updated: 2026-03-31 — Phase assignments added after roadmap creation*
