@@ -67,10 +67,10 @@ Source: Inherited from Phase 01 contract; exceptions derived from CONTEXT.md D-0
 | Eyebrow | 11px (text-[11px]) | 600 (semibold) | 1.2 |
 
 Notes:
-- Question numbering prefix: `text-sm font-medium text-zinc-400` — matches existing `QuestionPanel.tsx` pattern
+- Question numbering prefix: `text-sm font-semibold text-zinc-400` — matches existing `QuestionPanel.tsx` pattern
 - Question text: `text-sm text-zinc-300` — matches existing pattern
 - MCQ option labels: `text-sm text-zinc-200`
-- Person-attribution button labels ("A", "B", "Ambos"): `text-xs font-semibold` (12px, weight 600)
+- Person-attribution button labels ("A", "B", "Ambos"): `text-[10px] font-semibold` (10px, weight 600)
 - Person attribution header (person name identifiers): `text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-300/70` — matches eyebrow pattern from page.tsx
 - Gap-fill inline input text: `text-sm text-zinc-100` — matches body, seamless with surrounding sentence text
 - Section heading "Questions": `text-sm font-semibold text-zinc-300 uppercase tracking-wide` — preserve existing QuestionPanel heading
@@ -267,7 +267,7 @@ shadow-[0_20px_45px_-30px_rgba(56,189,248,0.95)]
 **Button appearance (unselected):**
 ```
 rounded-lg border border-white/10 bg-zinc-800/60 px-3 py-1.5
-text-xs font-semibold text-zinc-400
+text-[10px] font-semibold text-zinc-400
 hover:border-sky-400/25 hover:text-zinc-200 transition-all duration-200
 ```
 
