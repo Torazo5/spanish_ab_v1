@@ -23,7 +23,10 @@ export function useMediaRecorder(onBlobReady?: (blob: Blob) => void) {
   const streamRef = useRef<MediaStream | null>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const onBlobReadyRef = useRef(onBlobReady)
-  onBlobReadyRef.current = onBlobReady
+
+  useEffect(() => {
+    onBlobReadyRef.current = onBlobReady
+  }, [onBlobReady])
 
   // Request mic permission on mount
   useEffect(() => {

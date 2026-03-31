@@ -1,74 +1,8 @@
 'use client'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import type { ObserverFeedback, GrammarError } from '@/lib/types'
-
-const CATEGORY_COLORS: Record<string, string> = {
-  gender: 'bg-purple-900/60 text-purple-200',
-  tense: 'bg-blue-900/60 text-blue-200',
-  conjugation: 'bg-orange-900/60 text-orange-200',
-  vocabulary: 'bg-cyan-900/60 text-cyan-200',
-  'word-order': 'bg-pink-900/60 text-pink-200',
-}
-
-const SEVERITY_STYLES: Record<string, string> = {
-  major: 'border-l-red-400',
-  minor: 'border-l-yellow-500',
-}
-
-/**
- * Highlights only the words that differ between original and correction.
- */
-function DiffHighlight({ original, correction }: { original: string; correction: string }) {
-  const trimmedCorrection = correction.trim()
-
-  // If the correction is empty or identical to the original, just show the original in red
-  if (!trimmedCorrection || trimmedCorrection.toLowerCase() === original.trim().toLowerCase()) {
-    return (
-      <span className="text-sm bg-red-500/20 px-1.5 py-0.5 rounded text-red-300 font-bold">
-        {original}
-      </span>
-    )
-  }
-
-  const origWords = original.split(/\s+/)
-  const corrWords = trimmedCorrection.split(/\s+/)
-  const maxLen = Math.max(origWords.length, corrWords.length)
-
-  // Find which original words differ from the correction
-  const diffIndices = new Set<number>()
-  for (let i = 0; i < maxLen; i++) {
-    if ((origWords[i] ?? '').toLowerCase() !== (corrWords[i] ?? '').toLowerCase()) {
-      diffIndices.add(i)
-    }
-  }
-
-  return (
-    <>
-      <span className="text-sm bg-red-500/20 px-1.5 py-0.5 rounded">
-        {origWords.map((word, i) => (
-          <span key={i}>
-            {i > 0 && ' '}
-            <span className={diffIndices.has(i) ? 'text-red-300 font-bold underline decoration-red-400 decoration-2 underline-offset-2' : 'text-red-300/70'}>
-              {word}
-            </span>
-          </span>
-        ))}
-      </span>
-      <span className="text-zinc-600">→</span>
-      <span className="text-sm bg-green-500/15 px-1.5 py-0.5 rounded">
-        {corrWords.map((word, i) => (
-          <span key={i}>
-            {i > 0 && ' '}
-            <span className={diffIndices.has(i) ? 'text-green-300 font-bold' : 'text-green-300/70'}>
-              {word}
-            </span>
-          </span>
-        ))}
-      </span>
-    </>
-  )
-}
+import { ErrorCard } from './ErrorCard'
 
 /**
  * Renders the original message with error words bolded + underlined in red.
@@ -83,7 +17,6 @@ function AnnotatedMessage({ message, errors }: { message: string; errors: Gramma
     type Span = { start: number; end: number; error: GrammarError }
     const spans: Span[] = []
     const lowerMsg = message.toLowerCase()
-    const used = new Set<number>() // track used positions to avoid overlap
 
     for (const err of errors) {
       const needle = err.original.toLowerCase()
@@ -146,16 +79,8 @@ interface Props {
 export function ObserverPanel({ feedbackHistory, autoCollapse = false }: Props) {
   // Track dismissed errors by "turnNumber-errorIndex"
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
-  // Track manually expanded/collapsed turns (overrides autoCollapse)
-  const [manualToggle, setManualToggle] = useState<Record<number, boolean>>({})
-  // Reset manual toggles when a new turn arrives so auto-collapse kicks in
-  const prevLength = useRef(feedbackHistory.length)
-  useEffect(() => {
-    if (feedbackHistory.length > prevLength.current) {
-      setManualToggle({})
-    }
-    prevLength.current = feedbackHistory.length
-  }, [feedbackHistory.length])
+  // Scope manual expand/collapse overrides to the current feedback list length.
+  const [manualToggle, setManualToggle] = useState<Record<string, boolean>>({})
 
   const dismiss = (key: string) => {
     setDismissed((prev) => new Set(prev).add(key))
@@ -179,8 +104,8 @@ export function ObserverPanel({ feedbackHistory, autoCollapse = false }: Props) 
           (_, i) => !dismissed.has(`${fb.turnNumber}-${i}`)
         )
 
-        // Determine if this turn's content is expanded
-        const isExpanded = manualToggle[fb.turnNumber] ?? (autoCollapse ? isCurrent : true)
+        const toggleKey = `${feedbackHistory.length}-${fb.turnNumber}`
+        const isExpanded = manualToggle[toggleKey] ?? (autoCollapse ? isCurrent : true)
 
         const errorCount = visibleErrors.length
 
@@ -195,10 +120,10 @@ export function ObserverPanel({ feedbackHistory, autoCollapse = false }: Props) 
           >
             {/* Turn header — clickable to expand/collapse */}
             <button
-              onClick={() => setManualToggle((prev) => ({ ...prev, [fb.turnNumber]: !isExpanded }))}
+              onClick={() => setManualToggle((prev) => ({ ...prev, [toggleKey]: !isExpanded }))}
               className="w-full flex items-center justify-between"
             >
-              <div className="flex items-center gap-2">
+              <span className="flex items-center gap-2">
                 <span className="text-[11px] text-zinc-500 font-medium">Turn {fb.turnNumber}</span>
                 {isCurrent && (
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-semibold uppercase tracking-wider">
@@ -213,7 +138,7 @@ export function ObserverPanel({ feedbackHistory, autoCollapse = false }: Props) 
                 {!isExpanded && errorCount === 0 && !fb.generalFeedback && (
                   <span className="text-[10px] text-green-400">No errors</span>
                 )}
-              </div>
+              </span>
               <ChevronDown className={`w-3.5 h-3.5 text-zinc-500 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
             </button>
 
@@ -234,34 +159,13 @@ export function ObserverPanel({ feedbackHistory, autoCollapse = false }: Props) 
                       const key = `${fb.turnNumber}-${i}`
                       if (dismissed.has(key)) return null
                       return (
-                        <div
+                        <ErrorCard
                           key={i}
-                          className={`bg-zinc-900/60 rounded-lg p-3 border-l-2 flex gap-3 ${SEVERITY_STYLES[err.severity] ?? 'border-l-zinc-600'}`}
-                        >
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                              <DiffHighlight original={err.original} correction={err.correction} />
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${CATEGORY_COLORS[err.category] ?? 'bg-zinc-700 text-zinc-300'}`}>
-                                {err.category}
-                              </span>
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
-                                err.severity === 'major'
-                                  ? 'bg-red-500/20 text-red-400'
-                                  : 'bg-yellow-500/20 text-yellow-400'
-                              }`}>
-                                {err.severity}
-                              </span>
-                            </div>
-                            <p className="text-zinc-400 text-xs leading-relaxed">{err.explanation}</p>
-                          </div>
-                          <button
-                            onClick={() => dismiss(key)}
-                            title="This feedback is incorrect — dismiss it"
-                            className="shrink-0 self-center text-[10px] px-2 py-1 rounded border border-zinc-700 text-zinc-500 hover:border-red-500/50 hover:text-red-400 hover:bg-red-500/10 transition-colors font-medium"
-                          >
-                            Dismiss
-                          </button>
-                        </div>
+                          error={err}
+                          errorKey={key}
+                          originalMessage={fb.originalMessage}
+                          onDismiss={dismiss}
+                        />
                       )
                     })}
                   </div>

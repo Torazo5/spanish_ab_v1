@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { Play, Pause, RotateCcw } from 'lucide-react'
+import { Play, Pause, RotateCcw, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis'
 
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function ListeningPlayer({ script, title }: Props) {
-  const { speak, stop, isSpeaking } = useSpeechSynthesis()
+  const { speak, stop, isSpeaking, isLoading } = useSpeechSynthesis()
   const [hasPlayed, setHasPlayed] = useState(false)
 
   const handlePlay = () => {
@@ -31,12 +31,17 @@ export function ListeningPlayer({ script, title }: Props) {
             <Pause className="w-4 h-4" /> Pause
           </Button>
         ) : (
-          <Button onClick={handlePlay} size="sm" className="gap-2">
-            {hasPlayed ? <RotateCcw className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-            {hasPlayed ? 'Play Again' : 'Play Audio'}
+          <Button onClick={handlePlay} disabled={isLoading} size="sm" className="gap-2">
+            {isLoading ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Loading...</>
+            ) : hasPlayed ? (
+              <><RotateCcw className="w-4 h-4" /> Play Again</>
+            ) : (
+              <><Play className="w-4 h-4" /> Play Audio</>
+            )}
           </Button>
         )}
-        {isSpeaking && (
+        {isSpeaking && !isLoading && (
           <div className="flex gap-1 items-end">
             {[1, 2, 3, 4].map((i) => (
               <div

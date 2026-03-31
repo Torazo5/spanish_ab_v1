@@ -13,7 +13,6 @@
     "clsx": "^2.1.1",
     "groq-sdk": "^1.1.2",
     "lucide-react": "^1.7.0",
-    "msedge-tts": "^2.0.4",
     "next": "16.2.1",
     "radix-ui": "^1.4.3",
     "react": "19.2.4",

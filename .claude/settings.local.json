@@ -28,7 +28,12 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "WebFetch(domain:groq.com)"
+      "WebFetch(domain:groq.com)",
+      "Bash(wc:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(node \"$HOME/.claude/get-shit-done/bin/gsd-tools.cjs\" commit \"docs: start milestone v1.1 IB-Authentic Listening Practice\" --files .planning/PROJECT.md .planning/STATE.md)",
+      "Bash(node \"$HOME/.claude/get-shit-done/bin/gsd-tools.cjs\" agent-skills gsd-project-researcher)",
+      "Bash(node \"$HOME/.claude/get-shit-done/bin/gsd-tools.cjs\" agent-skills gsd-research-synthesizer)"
     ]
   }
 }

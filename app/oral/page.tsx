@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Mic, RotateCcw, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -11,30 +11,41 @@ import { useMediaRecorder } from '@/hooks/useMediaRecorder'
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis'
 import { useOralSession } from '@/hooks/useOralSession'
 import { IB_TOPICS } from '@/lib/types'
-import type { IbTopic } from '@/lib/types'
+import type { ConversationMode, IbTopic } from '@/lib/types'
 
 export default function OralPage() {
   const [topic, setTopic] = useState<IbTopic>('school')
   const [sessionStarted, setSessionStarted] = useState(false)
   const [showTranscript, setShowTranscript] = useState(true)
   const [speechMode, setSpeechMode] = useState<'natural' | 'strict'>('natural')
+  const [conversationMode, setConversationMode] = useState<ConversationMode>('manual')
   const [autoCollapse, setAutoCollapse] = useState(true)
   const [error, setError] = useState('')
 
   const { speak, stop: stopSpeaking } = useSpeechSynthesis()
   const session = useOralSession(speak, stopSpeaking)
 
-  // Use a ref so the callback always sees the latest topic/session/speechMode without stale closure issues
   const topicRef = useRef(topic)
-  topicRef.current = topic
   const speechModeRef = useRef(speechMode)
-  speechModeRef.current = speechMode
+  const conversationModeRef = useRef(conversationMode)
   const sessionRef = useRef(session)
-  sessionRef.current = session
+
+  useEffect(() => {
+    topicRef.current = topic
+    speechModeRef.current = speechMode
+    conversationModeRef.current = conversationMode
+    sessionRef.current = session
+  }, [topic, speechMode, conversationMode, session])
 
   const handleBlobReady = useCallback(async (blob: Blob) => {
+    setError('')
     try {
-      await sessionRef.current.processUserTurn(blob, topicRef.current, speechModeRef.current)
+      await sessionRef.current.processUserTurn(
+        blob,
+        topicRef.current,
+        speechModeRef.current,
+        conversationModeRef.current
+      )
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to process audio')
     }
@@ -46,12 +57,21 @@ export default function OralPage() {
     setError('')
     setSessionStarted(true)
     try {
-      await session.startSession(topic)
+      await session.startSession(topic, conversationMode)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to start session')
       setSessionStarted(false)
     }
   }
+
+  const handleBeginAssistantTurn = useCallback(async () => {
+    setError('')
+    try {
+      await sessionRef.current.beginAssistantTurn(topicRef.current)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to generate Luis\'s reply')
+    }
+  }, [])
 
   const handleReset = () => {
     stopSpeaking()
@@ -65,11 +85,11 @@ export default function OralPage() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
         <div className="flex items-center gap-3">
-          <Link href="/">
-            <Button variant="ghost" size="sm" className="gap-1 text-zinc-400 h-8">
+          <Button asChild variant="ghost" size="sm" className="gap-1 text-zinc-400 h-8">
+            <Link href="/">
               <ArrowLeft className="w-4 h-4" /> Back
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <h1 className="text-base font-semibold">Oral Practice</h1>
         </div>
 
@@ -82,67 +102,119 @@ export default function OralPage() {
 
       {/* Setup (before session starts) */}
       {!sessionStarted && (
-        <div className="flex-1 flex items-center justify-center p-6">
-          <Card className="bg-zinc-900 border-zinc-800 p-6 w-full max-w-sm space-y-5">
-            <h2 className="text-sm font-semibold text-zinc-300">Choose a topic</h2>
-            <div className="flex flex-wrap gap-2">
-              {IB_TOPICS.map((t) => (
+        <div className="flex-1 overflow-y-auto flex items-start justify-center p-6">
+          <Card className="w-full max-w-md space-y-6 border-white/10 bg-gradient-to-br from-zinc-900 via-zinc-900 to-black p-6 shadow-[0_30px_80px_-50px_rgba(0,0,0,0.9)]">
+            <div className="space-y-1">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-300/70">
+                Oral Setup
+              </p>
+              <h2 className="text-lg font-semibold text-white">Choose a topic</h2>
+              <p className="text-sm text-zinc-400">
+                Pick the theme and how much control you want over Luis&apos;s replies.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {IB_TOPICS.map((t, index) => (
                 <button
                   key={t.value}
                   onClick={() => setTopic(t.value)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all active:scale-95 ${
+                  className={`group relative overflow-hidden rounded-2xl border px-4 py-3 text-left transition-all duration-200 active:scale-[0.99] ${
                     topic === t.value
-                      ? 'bg-green-600 border-green-500 text-white shadow-md shadow-green-950'
-                      : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700 hover:border-zinc-500 hover:text-white'
+                      ? 'border-emerald-400/50 bg-gradient-to-br from-emerald-400/20 via-emerald-500/10 to-zinc-950 text-white shadow-[0_20px_45px_-30px_rgba(16,185,129,0.95)]'
+                      : 'border-white/10 bg-gradient-to-br from-zinc-800 via-zinc-900 to-zinc-950 text-zinc-200 hover:border-emerald-400/25 hover:from-zinc-700 hover:via-zinc-900 hover:to-zinc-950 hover:text-white'
                   }`}
                 >
-                  {t.label}
+                  <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/8 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                  <span className="relative flex items-start justify-between gap-3">
+                    <span className="block">
+                      <span className="block text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500">
+                        Topic {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <span className="mt-1 block text-sm font-semibold leading-snug">{t.label}</span>
+                    </span>
+                    <span
+                      className={`mt-0.5 h-2.5 w-2.5 rounded-full transition-all ${
+                        topic === t.value ? 'bg-emerald-300 shadow-[0_0_0_6px_rgba(110,231,183,0.13)]' : 'bg-zinc-600'
+                      }`}
+                    />
+                  </span>
                 </button>
               ))}
             </div>
 
-            {/* Mode selector */}
             <div className="space-y-2">
-              <p className="text-xs font-medium text-zinc-400">Mode</p>
+              <p className="text-xs font-medium text-zinc-400">Conversation pacing</p>
               <div className="grid grid-cols-2 gap-2">
                 <button
-                  onClick={() => setShowTranscript(true)}
-                  className={`px-3 py-2.5 rounded-lg text-sm font-medium border transition-all active:scale-95 text-left ${
-                    showTranscript
-                      ? 'bg-zinc-700 border-zinc-500 text-white'
-                      : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-750 hover:text-zinc-300'
+                  onClick={() => setConversationMode('manual')}
+                  className={`rounded-2xl border px-3 py-3 text-left transition-all active:scale-[0.99] ${
+                    conversationMode === 'manual'
+                      ? 'border-emerald-400/40 bg-emerald-500/10 text-white shadow-[0_18px_35px_-28px_rgba(16,185,129,0.95)]'
+                      : 'border-zinc-800 bg-zinc-900/80 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                   }`}
                 >
-                  <div className="font-semibold">With text</div>
-                  <div className="text-[11px] text-zinc-400 mt-0.5">Show your transcript</div>
+                  <span className="block font-semibold">Manual</span>
+                  <span className="mt-1 block text-[11px] leading-relaxed text-zinc-400">
+                    You click to start each Luis message.
+                  </span>
                 </button>
                 <button
-                  onClick={() => setShowTranscript(false)}
-                  className={`px-3 py-2.5 rounded-lg text-sm font-medium border transition-all active:scale-95 text-left ${
-                    !showTranscript
-                      ? 'bg-zinc-700 border-zinc-500 text-white'
-                      : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-750 hover:text-zinc-300'
+                  onClick={() => setConversationMode('auto')}
+                  className={`rounded-2xl border px-3 py-3 text-left transition-all active:scale-[0.99] ${
+                    conversationMode === 'auto'
+                      ? 'border-emerald-400/40 bg-emerald-500/10 text-white shadow-[0_18px_35px_-28px_rgba(16,185,129,0.95)]'
+                      : 'border-zinc-800 bg-zinc-900/80 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                   }`}
                 >
-                  <div className="font-semibold">No text</div>
-                  <div className="text-[11px] text-zinc-400 mt-0.5">Hide your transcript</div>
+                  <span className="block font-semibold">Auto</span>
+                  <span className="mt-1 block text-[11px] leading-relaxed text-zinc-400">
+                    Luis answers automatically like a real conversation.
+                  </span>
                 </button>
               </div>
             </div>
 
-            {/* Speech mode selector */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-zinc-400">Transcript display</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setShowTranscript(true)}
+                  className={`rounded-2xl border px-3 py-3 text-left transition-all active:scale-[0.99] ${
+                    showTranscript
+                      ? 'border-zinc-500 bg-zinc-800 text-white'
+                      : 'border-zinc-800 bg-zinc-900/80 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
+                  }`}
+                >
+                  <span className="block font-semibold">With text</span>
+                  <span className="mt-1 block text-[11px] leading-relaxed text-zinc-400">Show your transcript</span>
+                </button>
+                <button
+                  onClick={() => setShowTranscript(false)}
+                  className={`rounded-2xl border px-3 py-3 text-left transition-all active:scale-[0.99] ${
+                    !showTranscript
+                      ? 'border-zinc-500 bg-zinc-800 text-white'
+                      : 'border-zinc-800 bg-zinc-900/80 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
+                  }`}
+                >
+                  <span className="block font-semibold">No text</span>
+                  <span className="mt-1 block text-[11px] leading-relaxed text-zinc-400">Hide your transcript</span>
+                </button>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <p className="text-xs font-medium text-zinc-400">Feedback strictness</p>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setSpeechMode('natural')}
-                  className={`px-3 py-2.5 rounded-lg text-sm font-medium border transition-all active:scale-95 text-left ${
+                  className={`rounded-2xl border px-3 py-3 text-left transition-all active:scale-[0.99] ${
                     speechMode === 'natural'
-                      ? 'bg-zinc-700 border-zinc-500 text-white'
-                      : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-750 hover:text-zinc-300'
+                      ? 'border-zinc-500 bg-zinc-800 text-white'
+                      : 'border-zinc-800 bg-zinc-900/80 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                   }`}
                 >
-                  <div className="font-semibold flex items-center gap-1.5">
+                  <span className="flex items-center gap-1.5 font-semibold">
                     Natural speech
                     <span className="relative group">
                       <Info className="w-3 h-3 text-zinc-500" />
@@ -150,18 +222,18 @@ export default function OralPage() {
                         Ignores stutters, repetitions, and self-corrections that are common in spoken language. Only flags actual grammar mistakes.
                       </span>
                     </span>
-                  </div>
-                  <div className="text-[11px] text-zinc-400 mt-0.5">Ignore stutters</div>
+                  </span>
+                  <span className="mt-0.5 block text-[11px] text-zinc-400">Ignore stutters</span>
                 </button>
                 <button
                   onClick={() => setSpeechMode('strict')}
-                  className={`px-3 py-2.5 rounded-lg text-sm font-medium border transition-all active:scale-95 text-left ${
+                  className={`rounded-2xl border px-3 py-3 text-left transition-all active:scale-[0.99] ${
                     speechMode === 'strict'
-                      ? 'bg-zinc-700 border-zinc-500 text-white'
-                      : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-750 hover:text-zinc-300'
+                      ? 'border-zinc-500 bg-zinc-800 text-white'
+                      : 'border-zinc-800 bg-zinc-900/80 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                   }`}
                 >
-                  <div className="font-semibold flex items-center gap-1.5">
+                  <span className="flex items-center gap-1.5 font-semibold">
                     Strict
                     <span className="relative group">
                       <Info className="w-3 h-3 text-zinc-500" />
@@ -169,8 +241,8 @@ export default function OralPage() {
                         Flags all errors including hesitations, false starts, and repeated words. Best for polished speaking practice.
                       </span>
                     </span>
-                  </div>
-                  <div className="text-[11px] text-zinc-400 mt-0.5">Flag everything</div>
+                  </span>
+                  <span className="mt-0.5 block text-[11px] text-zinc-400">Flag everything</span>
                 </button>
               </div>
             </div>
@@ -183,10 +255,10 @@ export default function OralPage() {
             <button
               onClick={handleStart}
               disabled={!recorder.permissionGranted}
-              className="w-full py-3 rounded-xl bg-green-600 hover:bg-green-500 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all font-semibold text-white text-sm tracking-wide shadow-lg shadow-green-950/50 flex items-center justify-center gap-2"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-3 text-sm font-semibold tracking-wide text-white shadow-[0_24px_45px_-28px_rgba(16,185,129,0.95)] transition-all hover:bg-emerald-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Mic className="w-4 h-4" />
-              Start Conversation
+              Start Session
             </button>
           </Card>
         </div>
@@ -195,42 +267,99 @@ export default function OralPage() {
       {/* Active session */}
       {sessionStarted && (
         <>
-          {/* Topic + mode bar */}
-          <div className="px-4 py-2 border-b border-zinc-800/50 flex items-center justify-between">
-            <span className="text-xs text-zinc-500">
-              Topic: <span className="text-zinc-300">{IB_TOPICS.find((t) => t.value === topic)?.label}</span>
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setSpeechMode((m) => m === 'natural' ? 'strict' : 'natural')}
-                className={`text-xs px-2.5 py-1 rounded-md border font-medium transition-all ${
-                  speechMode === 'natural'
-                    ? 'bg-zinc-700 border-zinc-600 text-zinc-200'
-                    : 'bg-amber-900/50 border-amber-700/50 text-amber-300'
-                }`}
-              >
-                {speechMode === 'natural' ? 'Natural' : 'Strict'}
-              </button>
-              <button
-                onClick={() => setAutoCollapse((v) => !v)}
-                className={`text-xs px-2.5 py-1 rounded-md border font-medium transition-all ${
-                  autoCollapse
-                    ? 'bg-zinc-700 border-zinc-600 text-zinc-200'
-                    : 'bg-zinc-800 border-zinc-700 text-zinc-500 hover:text-zinc-300'
-                }`}
-              >
-                {autoCollapse ? 'Collapse old' : 'Show all'}
-              </button>
-              <button
-                onClick={() => setShowTranscript((v) => !v)}
-                className={`text-xs px-2.5 py-1 rounded-md border font-medium transition-all ${
-                  showTranscript
-                    ? 'bg-zinc-700 border-zinc-600 text-zinc-200'
-                    : 'bg-zinc-800 border-zinc-700 text-zinc-500 hover:text-zinc-300'
-                }`}
-              >
-                {showTranscript ? 'Text on' : 'Text off'}
-              </button>
+          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-zinc-800/50 px-4 py-3">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+              <span>
+                Topic: <span className="text-zinc-300">{IB_TOPICS.find((t) => t.value === topic)?.label}</span>
+              </span>
+              <span className="rounded-full border border-zinc-800 bg-zinc-900 px-2.5 py-1 text-[11px] font-medium text-zinc-300">
+                {conversationMode === 'manual' ? 'Manual replies' : 'Auto replies'}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-start gap-3">
+              <div className="space-y-1">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                  Transcript
+                </p>
+                <div className="flex rounded-xl border border-zinc-800 bg-zinc-950/80 p-1">
+                  <button
+                    onClick={() => setShowTranscript(true)}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                      showTranscript
+                        ? 'bg-zinc-700 text-white shadow-sm'
+                        : 'text-zinc-500 hover:text-zinc-300'
+                    }`}
+                  >
+                    With text
+                  </button>
+                  <button
+                    onClick={() => setShowTranscript(false)}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                      !showTranscript
+                        ? 'bg-zinc-700 text-white shadow-sm'
+                        : 'text-zinc-500 hover:text-zinc-300'
+                    }`}
+                  >
+                    No text
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                  Pacing
+                </p>
+                <div className="flex rounded-xl border border-zinc-800 bg-zinc-950/80 p-1">
+                  <button
+                    onClick={() => setConversationMode('manual')}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                      conversationMode === 'manual'
+                        ? 'bg-zinc-700 text-white shadow-sm'
+                        : 'text-zinc-500 hover:text-zinc-300'
+                    }`}
+                  >
+                    Manual
+                  </button>
+                  <button
+                    onClick={() => setConversationMode('auto')}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                      conversationMode === 'auto'
+                        ? 'bg-zinc-700 text-white shadow-sm'
+                        : 'text-zinc-500 hover:text-zinc-300'
+                    }`}
+                  >
+                    Auto
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                  Feedback
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setSpeechMode((m) => m === 'natural' ? 'strict' : 'natural')}
+                    className={`text-xs px-2.5 py-1.5 rounded-lg border font-medium transition-all ${
+                      speechMode === 'natural'
+                        ? 'bg-zinc-700 border-zinc-600 text-zinc-200'
+                        : 'bg-amber-900/50 border-amber-700/50 text-amber-300'
+                    }`}
+                  >
+                    {speechMode === 'natural' ? 'Natural' : 'Strict'}
+                  </button>
+                  <button
+                    onClick={() => setAutoCollapse((v) => !v)}
+                    className={`text-xs px-2.5 py-1.5 rounded-lg border font-medium transition-all ${
+                      autoCollapse
+                        ? 'bg-zinc-700 border-zinc-600 text-zinc-200'
+                        : 'bg-zinc-800 border-zinc-700 text-zinc-500 hover:text-zinc-300'
+                    }`}
+                  >
+                    {autoCollapse ? 'Collapse old' : 'Show all'}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -245,6 +374,8 @@ export default function OralPage() {
                 history={session.history}
                 streamingText={session.streamingText}
                 showTranscript={showTranscript}
+                phase={session.phase}
+                onStartAssistantTurn={conversationMode === 'manual' ? handleBeginAssistantTurn : undefined}
               />
             </div>
 
@@ -262,13 +393,23 @@ export default function OralPage() {
             {error && (
               <div className="text-red-400 text-xs mb-2">{error}</div>
             )}
-            <MicrophoneButton
-              isRecording={recorder.isRecording}
-              phase={session.phase}
-              secondsLeft={recorder.secondsLeft}
-              onStart={recorder.startRecording}
-              onStop={recorder.stopRecording}
-            />
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <MicrophoneButton
+                isRecording={recorder.isRecording}
+                phase={session.phase}
+                secondsLeft={recorder.secondsLeft}
+                onStart={recorder.startRecording}
+                onStop={recorder.stopRecording}
+              />
+              {conversationMode === 'manual' && session.phase === 'waiting-for-ai-start' && (
+                <Button
+                  onClick={handleBeginAssistantTurn}
+                  className="rounded-xl bg-emerald-500 px-4 text-white hover:bg-emerald-400"
+                >
+                  {session.history.length === 0 ? 'Start Conversation' : 'Generate Luis Reply'}
+                </Button>
+              )}
+            </div>
           </div>
         </>
       )}

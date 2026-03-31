@@ -1,56 +1,39 @@
 import { NextRequest } from 'next/server'
-import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
 
-// Reuse the TTS instance across requests to avoid re-handshaking
-let tts: MsEdgeTTS | null = null
+export async function GET(req: NextRequest) {
+  const text = req.nextUrl.searchParams.get('text')
+  if (!text?.trim()) return new Response('text is required', { status: 400 })
 
-async function getTts(): Promise<MsEdgeTTS> {
-  if (!tts) {
-    tts = new MsEdgeTTS()
-    await tts.setMetadata(
-      'es-ES-AlvaroNeural',
-      OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3
-    )
-  }
-  return tts
-}
+  const key = process.env.AZURE_TTS_KEY
+  const region = process.env.AZURE_TTS_REGION
+  if (!key || !region) return new Response('TTS not configured', { status: 503 })
 
-export async function POST(req: NextRequest) {
-  const { text } = (await req.json()) as { text: string }
+  const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const ssml = `<speak version='1.0' xml:lang='es-ES'><voice name='es-ES-AlvaroNeural'>${escaped}</voice></speak>`
 
-  if (!text?.trim()) {
-    return new Response('text is required', { status: 400 })
-  }
-
-  try {
-    const engine = await getTts()
-    const { audioStream } = engine.toStream(text)
-
-    const readable = new ReadableStream({
-      start(controller) {
-        audioStream.on('data', (chunk: Buffer) => {
-          controller.enqueue(new Uint8Array(chunk))
-        })
-        audioStream.on('end', () => controller.close())
-        audioStream.on('error', (err: Error) => {
-          // Reset so next request gets a fresh connection
-          tts = null
-          controller.error(err)
-        })
-      },
-    })
-
-    return new Response(readable, {
+  const res = await fetch(
+    `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`,
+    {
+      method: 'POST',
       headers: {
-        'Content-Type': 'audio/mpeg',
-        'Cache-Control': 'public, max-age=3600',
+        'Ocp-Apim-Subscription-Key': key,
+        'Content-Type': 'application/ssml+xml',
+        'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3',
+        'User-Agent': 'spanish-practice-app',
       },
-    })
-  } catch (err) {
-    tts = null // reset on error
-    return new Response('TTS failed', { status: 500 })
-  }
+      body: ssml,
+    }
+  )
+
+  if (!res.ok) return new Response('TTS failed', { status: 502 })
+
+  return new Response(res.body, {
+    headers: {
+      'Content-Type': 'audio/mpeg',
+      'Cache-Control': 'public, max-age=3600',
+    },
+  })
 }

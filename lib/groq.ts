@@ -21,4 +21,5 @@ export const MODELS = {
   observer: 'llama-3.3-70b-versatile',   // quality, 1,000 req/day free
   listening: 'llama-3.3-70b-versatile',
   whisper: 'whisper-large-v3-turbo',
+  drillDeeper: 'llama-3.1-8b-instant',   // grammar explanations, free tier
 } as const

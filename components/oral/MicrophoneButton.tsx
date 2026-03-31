@@ -1,5 +1,5 @@
 'use client'
-import { Mic, MicOff, Square } from 'lucide-react'
+import { Mic, Square } from 'lucide-react'
 import type { OralPhase } from '@/lib/types'
 
 interface Props {
@@ -13,6 +13,7 @@ interface Props {
 
 export function MicrophoneButton({ isRecording, phase, secondsLeft, onStart, onStop, disabled }: Props) {
   const isProcessing = phase === 'transcribing' || phase === 'processing'
+  const isWaitingForAiStart = phase === 'waiting-for-ai-start'
   const isWaiting = phase === 'waiting-for-user'
   const canRecord = isWaiting && !isRecording
 
@@ -57,6 +58,7 @@ export function MicrophoneButton({ isRecording, phase, secondsLeft, onStart, onS
           </span>
         )}
         {isProcessing && <span className="animate-pulse">Analyzing...</span>}
+        {isWaitingForAiStart && <span>Generate Luis&apos;s reply to continue</span>}
         {isWaiting && !isRecording && <span>Press mic to speak</span>}
         {phase === 'ai-speaking' && <span>Luis is speaking...</span>}
         {phase === 'idle' && <span>Select a topic to start</span>}

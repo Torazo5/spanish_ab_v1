@@ -1,34 +1,48 @@
 'use client'
 import { useState, useCallback, useRef } from 'react'
-import type { ConversationMessage, IbTopic, ObserverFeedback, OralPhase } from '@/lib/types'
+import type {
+  ConversationMessage,
+  ConversationMode,
+  IbTopic,
+  ObserverFeedback,
+  OralPhase,
+} from '@/lib/types'
 
 interface OralSessionState {
   phase: OralPhase
   history: ConversationMessage[]
   feedbackHistory: ObserverFeedback[]
-  streamingText: string  // current AI response being streamed
+  streamingText: string
   turnNumber: number
 }
 
-export function useOralSession(
-  onSpeak: (text: string) => void,
-  onStopSpeaking: () => void
-) {
-  const [state, setState] = useState<OralSessionState>({
-    phase: 'idle',
+function createInitialState(phase: OralPhase = 'idle'): OralSessionState {
+  return {
+    phase,
     history: [],
     feedbackHistory: [],
     streamingText: '',
     turnNumber: 0,
-  })
+  }
+}
+
+export function useOralSession(
+  onSpeak: (text: string) => Promise<void>,
+  onStopSpeaking: () => void
+) {
+  const [state, setState] = useState<OralSessionState>(createInitialState())
 
   const abortRef = useRef<AbortController | null>(null)
+  const historyRef = useRef<ConversationMessage[]>([])
+  const turnNumberRef = useRef(0)
 
-  const setPhase = (phase: OralPhase) =>
+  const setPhase = useCallback((phase: OralPhase) => {
     setState((s) => ({ ...s, phase }))
+  }, [])
 
   const addMessage = useCallback((msg: ConversationMessage) => {
-    setState((s) => ({ ...s, history: [...s.history, msg] }))
+    historyRef.current = [...historyRef.current, msg]
+    setState((s) => ({ ...s, history: historyRef.current }))
   }, [])
 
   const addFeedback = useCallback((fb: ObserverFeedback) => {
@@ -46,7 +60,11 @@ export function useOralSession(
         signal: abortRef.current.signal,
       })
 
-      const reader = res.body!.getReader()
+      if (!res.ok || !res.body) {
+        throw new Error('Failed to generate conversation reply')
+      }
+
+      const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let fullText = ''
       let buffer = ''
@@ -81,107 +99,169 @@ export function useOralSession(
     []
   )
 
-  // Start the session — AI opens the conversation
-  const startSession = useCallback(
-    async (topic: IbTopic) => {
-      setPhase('ai-speaking')
-      const text = await streamConversation({ topic, history: [], initial: true })
-      addMessage({ role: 'assistant', content: text, timestamp: Date.now() })
-      onSpeak(text)
-      setPhase('waiting-for-user')
+  const runObserver = useCallback(
+    async (
+      userMessage: string,
+      conversationHistory: ConversationMessage[],
+      turnNumber: number,
+      speechMode: 'natural' | 'strict'
+    ) => {
+      const res = await fetch('/api/oral/observe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userMessage,
+          conversationHistory,
+          turnNumber,
+          speechMode,
+        }),
+      })
+
+      if (!res.ok || !res.body) {
+        throw new Error('Failed to generate tutor feedback')
+      }
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() ?? ''
+
+        for (const line of lines) {
+          if (line.startsWith('event: feedback')) continue
+          if (line.startsWith('data: ') && !line.includes('{}')) {
+            try {
+              const feedback = JSON.parse(line.slice(6))
+              addFeedback(feedback)
+            } catch {
+              // Ignore malformed feedback chunks and keep listening for the final event.
+            }
+          }
+        }
+      }
     },
-    [streamConversation, addMessage, onSpeak]
+    [addFeedback]
   )
 
-  // Process a user's recorded audio blob
+  const startAssistantTurn = useCallback(
+    async (topic: IbTopic, options?: { initial?: boolean }) => {
+      setPhase('ai-speaking')
+      const text = await streamConversation({
+        topic,
+        history: historyRef.current,
+        initial: options?.initial,
+      })
+      addMessage({ role: 'assistant', content: text, timestamp: Date.now() })
+      await onSpeak(text)
+      setPhase('waiting-for-user')
+    },
+    [streamConversation, addMessage, onSpeak, setPhase]
+  )
+
+  const startSession = useCallback(
+    async (topic: IbTopic, conversationMode: ConversationMode = 'auto') => {
+      onStopSpeaking()
+      abortRef.current?.abort()
+      historyRef.current = []
+      turnNumberRef.current = 0
+
+      if (conversationMode === 'manual') {
+        setState(createInitialState('waiting-for-ai-start'))
+        return
+      }
+
+      setState(createInitialState('ai-speaking'))
+      const text = await streamConversation({ topic, history: [], initial: true })
+      addMessage({ role: 'assistant', content: text, timestamp: Date.now() })
+      await onSpeak(text)
+      setPhase('waiting-for-user')
+    },
+    [streamConversation, addMessage, onSpeak, onStopSpeaking, setPhase]
+  )
+
   const processUserTurn = useCallback(
-    async (audioBlob: Blob, topic: IbTopic, speechMode: 'natural' | 'strict' = 'natural') => {
+    async (
+      audioBlob: Blob,
+      topic: IbTopic,
+      speechMode: 'natural' | 'strict' = 'natural',
+      conversationMode: ConversationMode = 'auto'
+    ) => {
       onStopSpeaking()
       setPhase('transcribing')
 
-      // Step 1: transcribe (serial — both AI calls need this)
       const formData = new FormData()
       formData.append('audio', audioBlob, 'audio.webm')
       const transcribeRes = await fetch('/api/oral/transcribe', {
         method: 'POST',
         body: formData,
       })
+
+      if (!transcribeRes.ok) {
+        throw new Error('Failed to transcribe recording')
+      }
+
       const { transcript } = await transcribeRes.json()
 
-      const turnNumber = state.turnNumber + 1
+      const turnNumber = turnNumberRef.current + 1
+      turnNumberRef.current = turnNumber
       setState((s) => ({ ...s, turnNumber }))
 
-      // Add user message immediately
-      addMessage({ role: 'user', content: transcript, timestamp: Date.now() })
+      const userMessage: ConversationMessage = {
+        role: 'user',
+        content: transcript,
+        timestamp: Date.now(),
+      }
+      addMessage(userMessage)
       setPhase('processing')
 
-      // Step 2: fire conversation + observer in parallel
-      const currentHistory = state.history
+      const currentHistory = historyRef.current
+      const observerPromise = runObserver(transcript, currentHistory, turnNumber, speechMode)
+
+      if (conversationMode === 'manual') {
+        await observerPromise
+        setPhase('waiting-for-ai-start')
+        return
+      }
 
       const [conversationText] = await Promise.all([
-        // A: Conversation AI
         streamConversation({
-          userMessage: transcript,
           history: currentHistory,
           topic,
         }),
-
-        // B: Observer AI
-        (async () => {
-          const res = await fetch('/api/oral/observe', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              userMessage: transcript,
-              conversationHistory: currentHistory,
-              turnNumber,
-              speechMode,
-            }),
-          })
-          const reader = res.body!.getReader()
-          const decoder = new TextDecoder()
-          let buffer = ''
-          while (true) {
-            const { done, value } = await reader.read()
-            if (done) break
-            buffer += decoder.decode(value, { stream: true })
-            const lines = buffer.split('\n')
-            buffer = lines.pop() ?? ''
-            for (const line of lines) {
-              if (line.startsWith('event: feedback')) continue
-              if (line.startsWith('data: ') && !line.includes('{}')) {
-                try {
-                  const feedback = JSON.parse(line.slice(6))
-                  addFeedback(feedback)
-                } catch { /* ignore */ }
-              }
-            }
-          }
-        })(),
+        observerPromise,
       ])
 
       addMessage({ role: 'assistant', content: conversationText, timestamp: Date.now() })
       setPhase('ai-speaking')
-      onSpeak(conversationText)
+      await onSpeak(conversationText)
       setPhase('waiting-for-user')
     },
-    [state.history, state.turnNumber, streamConversation, addMessage, addFeedback, onSpeak, onStopSpeaking]
+    [streamConversation, addMessage, onSpeak, onStopSpeaking, runObserver, setPhase]
+  )
+
+  const beginAssistantTurn = useCallback(
+    async (topic: IbTopic) => {
+      await startAssistantTurn(topic, { initial: historyRef.current.length === 0 })
+    },
+    [startAssistantTurn]
   )
 
   const resetSession = useCallback(() => {
     abortRef.current?.abort()
-    setState({
-      phase: 'idle',
-      history: [],
-      feedbackHistory: [],
-      streamingText: '',
-      turnNumber: 0,
-    })
+    historyRef.current = []
+    turnNumberRef.current = 0
+    setState(createInitialState())
   }, [])
 
   return {
     ...state,
     startSession,
+    beginAssistantTurn,
     processUserTurn,
     resetSession,
   }

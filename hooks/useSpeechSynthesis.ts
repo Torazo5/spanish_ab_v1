@@ -3,61 +3,39 @@ import { useRef, useState, useCallback } from 'react'
 
 export function useSpeechSynthesis() {
   const [isSpeaking, setIsSpeaking] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const currentUrlRef = useRef<string | null>(null)
 
   const stop = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause()
       audioRef.current.src = ''
     }
-    if (currentUrlRef.current) {
-      URL.revokeObjectURL(currentUrlRef.current)
-      currentUrlRef.current = null
-    }
     setIsSpeaking(false)
+    setIsLoading(false)
   }, [])
 
   const speak = useCallback(async (text: string) => {
     stop()
+    setIsLoading(true)
     setIsSpeaking(true)
 
+    const url = `/api/tts?text=${encodeURIComponent(text)}`
+    const audio = new Audio(url)
+    audioRef.current = audio
+
+    audio.onplay = () => setIsLoading(false)
+    audio.onended = () => { setIsSpeaking(false); setIsLoading(false) }
+    audio.onerror = () => { setIsSpeaking(false); setIsLoading(false) }
+
     try {
-      const res = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-      })
-
-      if (!res.ok) {
-        setIsSpeaking(false)
-        return
-      }
-
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      currentUrlRef.current = url
-
-      const audio = new Audio(url)
-      audioRef.current = audio
-
-      audio.onended = () => {
-        URL.revokeObjectURL(url)
-        currentUrlRef.current = null
-        setIsSpeaking(false)
-      }
-
-      audio.onerror = () => {
-        URL.revokeObjectURL(url)
-        currentUrlRef.current = null
-        setIsSpeaking(false)
-      }
-
       await audio.play()
+      setIsLoading(false)
     } catch {
       setIsSpeaking(false)
+      setIsLoading(false)
     }
   }, [stop])
 
-  return { speak, stop, isSpeaking, isSupported: true }
+  return { speak, stop, isSpeaking, isLoading, isSupported: true }
 }

@@ -25,6 +25,8 @@ export interface ConversationMessage {
   timestamp: number
 }
 
+export type ConversationMode = 'auto' | 'manual'
+
 export type ErrorCategory =
   | 'gender'
   | 'tense'
@@ -70,6 +72,7 @@ export interface AnswerResult {
 export type OralPhase =
   | 'idle'
   | 'ai-speaking'
+  | 'waiting-for-ai-start'
   | 'waiting-for-user'
   | 'recording'
   | 'transcribing'

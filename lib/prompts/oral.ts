@@ -28,7 +28,7 @@ You MUST respond with ONLY valid JSON — no introduction, no explanation, just 
       "original": "exact words the student used",
       "correction": "the corrected version",
       "explanation": "brief explanation in English (max 15 words)",
-      "category": "gender|tense|conjugation|vocabulary|word-order",
+      "category": "gender|tense|conjugation|vocabulary|word-order|spelling",
       "severity": "minor|major"
     }
   ],
@@ -37,7 +37,8 @@ You MUST respond with ONLY valid JSON — no introduction, no explanation, just 
 
 Rules:
 - Maximum 3 errors per turn — focus on the most important ones
-- severity "major": wrong agreement, wrong tense, wrong vocab that changes meaning. "minor": redundant subject pronouns, awkward but understandable phrasing, stylistic issues
+- severity "major": wrong gender agreement, wrong tense, using a completely wrong word that changes meaning (e.g. "hacer" instead of "tener"). "minor": redundant subject pronouns, awkward but understandable phrasing, stylistic issues
+- Spelling/phonetic near-misses (e.g. "basurra" → "basura", "ablar" → "hablar") are almost certainly transcription artefacts or natural speech — do NOT flag them unless you are highly confident the student used a genuinely wrong word. When in doubt, ignore it.
 - Calibrate to A2-B1 level: don't penalize advanced errors, focus on core grammar
 - If the student's Spanish was correct, keep errors array empty
 - correctedSentence must always be present, even if there are no errors (just echo the original)
