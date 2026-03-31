@@ -30,9 +30,9 @@
   2. The generated question set contains questions whose mark values sum to the selected total
   3. Every generated session contains at least one MCQ, at least one True/False/Not Given, and at least one of gap-fill, icon-matching, or person-attribution
   4. Generated questions read at IB Ab Initio level — concise Spanish script, questions that require listening comprehension to answer
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
-- [ ] 01-01-PLAN.md — Define typed question schema and rewrite generation prompt for mixed-type mark-balanced output
+- [x] 01-01-PLAN.md — Define typed question schema and rewrite generation prompt for mixed-type mark-balanced output
 - [ ] 01-02-PLAN.md — Add MarkSelector UI to listening page and wire marks to API
 
 ### Phase 2: Question Type UI
@@ -77,7 +77,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 1. Generation Foundation | v1.1 | 0/2 | Planning complete | - |
+| 1. Generation Foundation | v1.1 | 1/2 | In Progress|  |
 | 2. Question Type UI | v1.1 | 0/TBD | Not started | - |
 | 3. Grading | v1.1 | 0/TBD | Not started | - |
 | 4. Transcript & Review | v1.1 | 0/TBD | Not started | - |

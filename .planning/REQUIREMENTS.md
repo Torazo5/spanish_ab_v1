@@ -25,11 +25,11 @@ Requirements for milestone v1.1: IB-Authentic Listening Practice.
 
 ### Prompt Quality
 
-- [ ] **LISTEN-08**: AI prompts produce question mixes that authentically reflect IB Ab Initio exam question style and difficulty
+- [x] **LISTEN-08**: AI prompts produce question mixes that authentically reflect IB Ab Initio exam question style and difficulty
 
 ### Session Configuration
 
-- [ ] **LISTEN-09**: User can select total marks for a session before starting (options: 5, 10, 15, 25; default 10); AI generates questions to fill the mark total
+- [x] **LISTEN-09**: User can select total marks for a session before starting (options: 5, 10, 15, 25; default 10); AI generates questions to fill the mark total
 
 ## Future Requirements
 
@@ -60,8 +60,8 @@ Requirements for milestone v1.1: IB-Authentic Listening Practice.
 | LISTEN-05 | Phase 2 | Pending |
 | LISTEN-06 | Phase 4 | Pending |
 | LISTEN-07 | Phase 4 | Pending |
-| LISTEN-08 | Phase 1 | Pending |
-| LISTEN-09 | Phase 1 | Pending |
+| LISTEN-08 | Phase 1 | Complete |
+| LISTEN-09 | Phase 1 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 9 total
