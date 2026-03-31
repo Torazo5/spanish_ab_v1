@@ -63,6 +63,69 @@ export interface ListeningScript {
   questions: ListeningQuestion[]
 }
 
+export type QuestionType = 'mcq' | 'true-false-notgiven' | 'gap-fill' | 'icon-matching' | 'person-attribution'
+
+export const MARK_OPTIONS = [5, 10, 15, 25] as const
+export type MarkOption = (typeof MARK_OPTIONS)[number]
+
+export interface McqQuestion {
+  type: 'mcq'
+  id: string
+  text: string
+  marks: number
+  options: string[]
+  correctIndex: number
+}
+
+export interface TrueFalseNotGivenQuestion {
+  type: 'true-false-notgiven'
+  id: string
+  text: string
+  marks: number
+  correctAnswer: 'true' | 'false' | 'not-given'
+}
+
+export interface GapFillQuestion {
+  type: 'gap-fill'
+  id: string
+  text: string
+  marks: number
+  acceptedAnswers: string[]
+}
+
+export interface IconMatchingQuestion {
+  type: 'icon-matching'
+  id: string
+  text: string
+  marks: number
+  icons: { name: string; label: string }[]
+  correctIconName: string
+}
+
+export interface PersonAttributionQuestion {
+  type: 'person-attribution'
+  id: string
+  text: string
+  marks: number
+  personA: string
+  personB: string
+  correctAnswer: 'A' | 'B' | 'ambos'
+}
+
+export type TypedListeningQuestion =
+  | McqQuestion
+  | TrueFalseNotGivenQuestion
+  | GapFillQuestion
+  | IconMatchingQuestion
+  | PersonAttributionQuestion
+
+export interface TypedListeningScript {
+  script: string
+  title: string
+  totalMarks: number
+  questions: TypedListeningQuestion[]
+}
+
 export interface AnswerResult {
   questionId: string
   correct: boolean
