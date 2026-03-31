@@ -39,7 +39,8 @@ Authentic IB exam-style practice that a student can run on their own machine for
 - [ ] **LISTEN-05**: Icon-matching questions use Lucide icons to represent concepts (transport, weather, activities)
 - [ ] **LISTEN-06**: User can reveal the full audio transcript at any point during a session
 - [ ] **LISTEN-07**: After submitting answers, user can enter "Review with transcript" mode to see the script and amend responses for learning
-- [ ] **LISTEN-08**: AI prompts produce question mixes that authentically reflect IB Ab Initio exam question style and difficulty
+- [ ] **LISTEN-08**: AI prompts produce question mixes that authentically reflect IB Ab Initio exam question style and difficulty — *Validated in Phase 01: generation-foundation (automated checks passed; live LLM behavior pending human UAT)*
+- [ ] **LISTEN-09**: User can select total marks (5, 10, 15, 25) before generating an exercise — *Validated in Phase 01: generation-foundation*
 
 ### Out of Scope
 
@@ -91,4 +92,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-31 — Milestone v1.1 started*
+*Last updated: 2026-03-31 — Phase 01 complete: typed question schema, marks-aware generation prompt, marks API param, and MarkSelector UI all in place*
