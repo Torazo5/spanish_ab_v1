@@ -7,13 +7,14 @@ import { Card } from '@/components/ui/card'
 import { ListeningPlayer } from '@/components/listening/ListeningPlayer'
 import { QuestionPanel } from '@/components/listening/QuestionPanel'
 import { FeedbackPanel } from '@/components/listening/FeedbackPanel'
-import { IB_TOPICS } from '@/lib/types'
+import { IB_TOPICS, MARK_OPTIONS, type MarkOption } from '@/lib/types'
 import type { ListeningScript, AnswerResult, IbTopic } from '@/lib/types'
 
 type PageState = 'setup' | 'loaded' | 'answered'
 
 export default function ListeningPage() {
   const [topic, setTopic] = useState<IbTopic>('school')
+  const [marks, setMarks] = useState<MarkOption>(10)
   const [pageState, setPageState] = useState<PageState>('setup')
   const [loading, setLoading] = useState(false)
   const [script, setScript] = useState<ListeningScript | null>(null)
@@ -37,7 +38,7 @@ export default function ListeningPage() {
       const res = await fetch('/api/listening/generate-script', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic }),
+        body: JSON.stringify({ topic, marks }),
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
@@ -127,6 +128,40 @@ export default function ListeningPage() {
                       }`}
                     />
                   </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Mark Target section */}
+            <div className="space-y-1">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-300/70">Mark Target</p>
+              <h2 className="text-lg font-semibold text-white">How many marks?</h2>
+              <p className="text-sm text-zinc-400">Total marks determines how many questions are generated.</p>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2">
+              {MARK_OPTIONS.map((m) => (
+                <button
+                  key={m}
+                  onClick={() => setMarks(m)}
+                  disabled={loading}
+                  className={`group relative overflow-hidden rounded-2xl border px-4 py-3 text-center transition-all duration-200 active:scale-[0.99] ${
+                    loading ? 'pointer-events-none opacity-60' : ''
+                  } ${
+                    marks === m
+                      ? 'border-sky-400/50 bg-gradient-to-br from-sky-400/20 via-sky-500/10 to-zinc-950 text-white shadow-[0_20px_45px_-30px_rgba(56,189,248,0.95)]'
+                      : 'border-white/10 bg-gradient-to-br from-zinc-800 via-zinc-900 to-zinc-950 text-zinc-200 hover:border-sky-400/25 hover:text-white'
+                  }`}
+                >
+                  <span className="relative flex flex-col items-center gap-0.5">
+                    <span className="text-sm font-semibold">{m}</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">marks</span>
+                  </span>
+                  <span
+                    className={`absolute right-2 top-2 h-2.5 w-2.5 rounded-full transition-all ${
+                      marks === m ? 'bg-sky-300 shadow-[0_0_0_6px_rgba(125,211,252,0.13)]' : 'bg-zinc-600'
+                    }`}
+                  />
                 </button>
               ))}
             </div>
