@@ -21,6 +21,7 @@ export default function ListeningPage() {
   const [loading, setLoading] = useState(false)
   const [script, setScript] = useState<TypedListeningScript | null>(null)
   const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [reviewAnswers, setReviewAnswers] = useState<Record<string, string>>({})
   const [results, setResults] = useState<{
     results: AnswerResult[]
     totalScore: number
@@ -35,6 +36,7 @@ export default function ListeningPage() {
     setScript(null)
     setAnswers({})
     setResults(null)
+    setReviewAnswers({})
 
     try {
       const res = await fetch('/api/listening/generate-script', {
@@ -110,6 +112,7 @@ export default function ListeningPage() {
         maxScore,
         encouragement: encouragement || (totalScore >= maxScore * 0.8 ? 'Great work!' : 'Keep practising!'),
       })
+      setReviewAnswers({ ...answers })
       setPageState('answered')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to check answers')
@@ -275,10 +278,37 @@ export default function ListeningPage() {
                 encouragement={results.encouragement}
               />
               <button
-                onClick={() => { setPageState('setup'); setScript(null); setResults(null); setError('') }}
+                onClick={() => { setPageState('setup'); setScript(null); setResults(null); setReviewAnswers({}); setError('') }}
                 className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-zinc-800/60 py-3 text-sm font-semibold text-zinc-300 transition-all hover:bg-zinc-700/60 hover:text-white active:scale-[0.98]"
               >
                 New Exercise
+              </button>
+              <button
+                onClick={() => setPageState('review')}
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-sky-400/30 bg-sky-950/40 py-3 text-sm font-semibold text-sky-300 transition-all hover:bg-sky-900/50 hover:text-sky-200 active:scale-[0.98]"
+              >
+                Review with transcript
+              </button>
+            </Card>
+          )}
+
+          {/* Review mode: editable questions with locked score */}
+          {script && pageState === 'review' && results && (
+            <Card className="border-white/10 bg-gradient-to-br from-zinc-900 via-zinc-900 to-black p-5 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.9)] space-y-4">
+              <p className="text-xs text-zinc-500 text-center">
+                Original score: <span className="text-white font-semibold">{results.totalScore} / {results.maxScore}</span> — amending answers here does not change your score
+              </p>
+              <TypedQuestionPanel
+                questions={script.questions}
+                answers={reviewAnswers}
+                onAnswerChange={(id, value) => setReviewAnswers(prev => ({ ...prev, [id]: value }))}
+                disabled={false}
+              />
+              <button
+                onClick={() => setPageState('answered')}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-zinc-800/60 py-3 text-sm font-semibold text-zinc-300 transition-all hover:bg-zinc-700/60 hover:text-white active:scale-[0.98]"
+              >
+                Back to results
               </button>
             </Card>
           )}
