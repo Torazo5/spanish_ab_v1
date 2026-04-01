@@ -37,8 +37,8 @@ Authentic IB exam-style practice that a student can run on their own machine for
 - ✓ **LISTEN-03**: Open-ended and gap-fill questions are graded by AI with explanatory feedback — *Validated in Phase 03: grading*
 - [ ] **LISTEN-04**: Person-attribution questions present each statement with Person A / Person B / Ambos options
 - [ ] **LISTEN-05**: Icon-matching questions use Lucide icons to represent concepts (transport, weather, activities)
-- [ ] **LISTEN-06**: User can reveal the full audio transcript at any point during a session
-- [ ] **LISTEN-07**: After submitting answers, user can enter "Review with transcript" mode to see the script and amend responses for learning
+- ✓ **LISTEN-06**: User can reveal the full audio transcript at any point during a session — *Validated in Phase 04: transcript-review*
+- ✓ **LISTEN-07**: After submitting answers, user can enter "Review with transcript" mode to see the script and amend responses for learning — *Validated in Phase 04: transcript-review*
 - [ ] **LISTEN-08**: AI prompts produce question mixes that authentically reflect IB Ab Initio exam question style and difficulty — *Validated in Phase 01: generation-foundation (automated checks passed; live LLM behavior pending human UAT)*
 - [ ] **LISTEN-09**: User can select total marks (5, 10, 15, 25) before generating an exercise — *Validated in Phase 01: generation-foundation*
 
@@ -92,4 +92,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-01 — Phase 03 complete: client-side grading for deterministic types, AI grading for gap-fill, marks-based scoring ("X / Y marks") with correct-answer reveal*
+*Last updated: 2026-04-01 — Phase 04 complete: collapsible transcript reveal (LISTEN-06) and post-submit review mode with locked score (LISTEN-07)*
