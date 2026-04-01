@@ -33,8 +33,8 @@ Authentic IB exam-style practice that a student can run on their own machine for
 ### Active
 
 - [ ] **LISTEN-01**: User can encounter at least 5 distinct IB-style question types in a single listening session
-- [ ] **LISTEN-02**: MCQ, True/False/Not Given, icon-matching, and person-attribution questions are graded instantly client-side
-- [ ] **LISTEN-03**: Open-ended and gap-fill questions are graded by AI with explanatory feedback
+- ✓ **LISTEN-02**: MCQ, True/False/Not Given, icon-matching, and person-attribution questions are graded instantly client-side — *Validated in Phase 03: grading*
+- ✓ **LISTEN-03**: Open-ended and gap-fill questions are graded by AI with explanatory feedback — *Validated in Phase 03: grading*
 - [ ] **LISTEN-04**: Person-attribution questions present each statement with Person A / Person B / Ambos options
 - [ ] **LISTEN-05**: Icon-matching questions use Lucide icons to represent concepts (transport, weather, activities)
 - [ ] **LISTEN-06**: User can reveal the full audio transcript at any point during a session
@@ -71,7 +71,7 @@ Authentic IB exam-style practice that a student can run on their own machine for
 |----------|-----------|---------|
 | Groq Llama for all LLM work | Free tier, sufficient quality for IB Ab Initio level | ✓ Good |
 | msedge-tts for TTS | No API key required | — Pending (unofficial package risk) |
-| Client-side grading for deterministic types | Faster, no API cost, reliable | — Pending |
+| Client-side grading for deterministic types | Faster, no API cost, reliable | ✓ Implemented in Phase 03 |
 | Lucide icons for icon-matching | Already installed, consistent with UI | — Pending |
 
 ## Evolution
@@ -92,4 +92,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-31 — Phase 01 complete: typed question schema, marks-aware generation prompt, marks API param, and MarkSelector UI all in place*
+*Last updated: 2026-04-01 — Phase 03 complete: client-side grading for deterministic types, AI grading for gap-fill, marks-based scoring ("X / Y marks") with correct-answer reveal*
