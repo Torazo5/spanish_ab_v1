@@ -103,6 +103,14 @@ None — TranscriptPanel renders real script data passed from page state.
 - PageState includes 'review' value, ready for Plan 02 to add review mode logic
 - Plan 02 (review mode): add "Review with transcript" button in answered state that sets pageState to 'review'; in review state show read-only questions with correct-answer highlights
 
+## Self-Check: PASSED
+
+- FOUND: components/listening/TranscriptPanel.tsx
+- FOUND: .planning/phases/04-transcript-review/04-01-SUMMARY.md
+- FOUND commit: 057b0d2 (Task 1 - TranscriptPanel component)
+- FOUND commit: 5a91724 (Task 2 - page.tsx integration)
+- FOUND commit: 180809d (docs - planning files)
+
 ---
 *Phase: 04-transcript-review*
 *Completed: 2026-04-01*
