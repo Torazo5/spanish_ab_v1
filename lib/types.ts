@@ -89,6 +89,7 @@ export interface GapFillQuestion {
   type: 'gap-fill'
   id: string
   text: string
+  sentence: string
   marks: number
   acceptedAnswers: string[]
 }

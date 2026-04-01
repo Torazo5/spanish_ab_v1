@@ -32,14 +32,15 @@ The 5 question types and their JSON shapes:
 - correctAnswer: one of "true", "false", or "not-given"
 
 3. Gap Fill (fill in the blank):
-{ "type": "gap-fill", "id": "q3", "text": "María vive en una ciudad muy ___.", "marks": 1, "acceptedAnswers": ["grande", "bonita"] }
-- text: a sentence from or about the script with ___ for the blank
+{ "type": "gap-fill", "id": "q3", "text": "Fill in the missing word", "sentence": "Maria vive en una ciudad muy ___.", "marks": 1, "acceptedAnswers": ["grande", "bonita"] }
+- text: question prompt or instruction
+- sentence: the sentence from the script with ___ marking the blank
 - acceptedAnswers: list of acceptable answers (include common synonyms)
 
 4. Icon Matching (match concept to icon):
 { "type": "icon-matching", "id": "q4", "text": "...", "marks": 1, "icons": [{"name": "bus", "label": "autobús"}, {"name": "train", "label": "tren"}, {"name": "plane", "label": "avión"}], "correctIconName": "bus" }
 - icons: 3-4 options, each with a Lucide icon name and Spanish label
-- Use ONLY these Lucide icon names: bus, train, plane, car, bike, sun, cloud, cloud-rain, snowflake, utensils, apple, coffee, book, pencil, music, heart, home, building, tree, globe, users, phone, laptop, camera, clock, map-pin, shopping-bag, shirt, umbrella, thermometer
+- Use ONLY these Lucide icon names: bus, train, plane, car, bike, sun, cloud, cloud-rain, snowflake, utensils, apple, coffee, book, pencil, music, heart, home, building, tree-pine, globe, users, phone, laptop, camera, clock, map-pin, shopping-bag, shirt, umbrella, thermometer
 - correctIconName: the icon name that answers the question
 
 5. Person Attribution (who said/did it?):
