@@ -18,7 +18,7 @@ export function FeedbackPanel({ results, questions, totalScore, maxScore, encour
         <h3 className="text-sm font-semibold text-zinc-300 uppercase tracking-wide">Results</h3>
         <div className="text-right">
           <span className="text-2xl font-bold text-white">{totalScore}</span>
-          <span className="text-zinc-500">/{maxScore}</span>
+          <span className="text-zinc-500"> / {maxScore} marks</span>
           <span className={`ml-2 text-sm font-medium ${pct >= 80 ? 'text-green-400' : pct >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
             {pct}%
           </span>
@@ -30,6 +30,11 @@ export function FeedbackPanel({ results, questions, totalScore, maxScore, encour
       <div className="space-y-3">
         {results.map((result, i) => {
           const question = questions.find((q) => q.id === result.questionId)
+          const isGapFill = question?.type === 'gap-fill'
+          const marksLabel = result.marks !== undefined
+            ? `${result.marks} / ${question?.marks ?? '?'} mark${(question?.marks ?? 1) !== 1 ? 's' : ''}`
+            : null
+
           return (
             <div
               key={result.questionId}
@@ -43,9 +48,29 @@ export function FeedbackPanel({ results, questions, totalScore, maxScore, encour
                 <span className={`mt-0.5 text-sm shrink-0 ${result.correct ? 'text-green-400' : 'text-red-400'}`}>
                   {result.correct ? '✓' : '✗'}
                 </span>
-                <div>
-                  <p className="text-xs text-zinc-400 mb-0.5">{i + 1}. {question?.text}</p>
-                  <p className="text-sm text-zinc-300">{result.feedback}</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 mb-0.5">
+                    <p className="text-xs text-zinc-400">{i + 1}. {question?.text}</p>
+                    {marksLabel && (
+                      <span className={`text-xs font-medium shrink-0 ${result.correct ? 'text-green-400' : 'text-red-400'}`}>
+                        {marksLabel}
+                      </span>
+                    )}
+                  </div>
+                  {/* Gap-fill: show AI explanatory feedback */}
+                  {isGapFill && result.feedback && (
+                    <p className="text-sm text-zinc-300">{result.feedback}</p>
+                  )}
+                  {/* Deterministic incorrect: show correct answer */}
+                  {!isGapFill && !result.correct && result.correctAnswer && (
+                    <p className="text-sm text-zinc-300">
+                      Correct answer: <span className="text-green-400 font-medium">{result.correctAnswer}</span>
+                    </p>
+                  )}
+                  {/* Deterministic correct: brief confirmation */}
+                  {!isGapFill && result.correct && (
+                    <p className="text-sm text-zinc-400">Correct!</p>
+                  )}
                 </div>
               </div>
             </div>

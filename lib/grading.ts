@@ -18,9 +18,8 @@ function gradeMcq(q: McqQuestion, answer: string): GradedResult {
   return {
     questionId: q.id,
     correct,
-    feedback: correct
-      ? `Correct! The answer is "${correctOption}".`
-      : `Incorrect. The correct answer is "${correctOption}".`,
+    feedback: correct ? 'Correct!' : 'Incorrect.',
+    correctAnswer: correctOption,
     marks: correct ? q.marks : 0,
   }
 }
@@ -36,9 +35,8 @@ function gradeTfng(q: TrueFalseNotGivenQuestion, answer: string): GradedResult {
   return {
     questionId: q.id,
     correct,
-    feedback: correct
-      ? `Correct! The answer is "${correctLabel}".`
-      : `Incorrect. The correct answer is "${correctLabel}".`,
+    feedback: correct ? 'Correct!' : 'Incorrect.',
+    correctAnswer: correctLabel,
     marks: correct ? q.marks : 0,
   }
 }
@@ -50,9 +48,8 @@ function gradeIconMatching(q: IconMatchingQuestion, answer: string): GradedResul
   return {
     questionId: q.id,
     correct,
-    feedback: correct
-      ? `Correct! The answer is "${correctLabel}".`
-      : `Incorrect. The correct answer is "${correctLabel}".`,
+    feedback: correct ? 'Correct!' : 'Incorrect.',
+    correctAnswer: correctLabel,
     marks: correct ? q.marks : 0,
   }
 }
@@ -68,9 +65,8 @@ function gradePersonAttribution(q: PersonAttributionQuestion, answer: string): G
   return {
     questionId: q.id,
     correct,
-    feedback: correct
-      ? `Correct! The answer is "${correctLabel}".`
-      : `Incorrect. The correct answer is "${correctLabel}".`,
+    feedback: correct ? 'Correct!' : 'Incorrect.',
+    correctAnswer: correctLabel,
     marks: correct ? q.marks : 0,
   }
 }
