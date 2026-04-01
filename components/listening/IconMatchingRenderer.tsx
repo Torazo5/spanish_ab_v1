@@ -11,7 +11,7 @@ function toPascalCase(kebab: string): string {
 function getIcon(name: string): React.ComponentType<LucideProps> {
   const key = toPascalCase(name)
   const icon = (LucideIcons as Record<string, unknown>)[key]
-  return (typeof icon === 'function' ? icon : LucideIcons.HelpCircle) as React.ComponentType<LucideProps>
+  return (icon != null ? icon : LucideIcons.HelpCircle) as React.ComponentType<LucideProps>
 }
 
 interface Props {
