@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { groq, MODELS } from '@/lib/groq'
-import { generateScriptPrompt } from '@/lib/prompts/listening'
+import { generateScriptPrompt, generateScriptRepairPrompt } from '@/lib/prompts/listening'
+import { validateGeneratedListeningScript } from '@/lib/listening-validation'
 import type { IbTopic } from '@/lib/types'
 
 export const runtime = 'nodejs'
@@ -18,22 +19,43 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'marks must be 5, 10, 15, or 25' }, { status: 400 })
   }
 
-  const response = await groq.chat.completions.create({
-    model: MODELS.listening,
-    messages: [{ role: 'user', content: generateScriptPrompt(topic, marks) }],
-    max_tokens: 2000,
-    temperature: 0.8,
-  })
+  let lastRaw = ''
+  let lastErrors: string[] = []
 
-  const text = response.choices[0].message.content ?? ''
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const prompt =
+      attempt === 0
+        ? generateScriptPrompt(topic, marks)
+        : generateScriptRepairPrompt(topic, marks, lastRaw, lastErrors)
 
-  // strip markdown code fences if present
-  const jsonText = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
+    const response = await groq.chat.completions.create({
+      model: MODELS.listening,
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 3500,
+      temperature: attempt === 0 ? 0.5 : 0.2,
+    })
 
-  try {
-    const data = JSON.parse(jsonText)
-    return NextResponse.json(data)
-  } catch {
-    return NextResponse.json({ error: 'Failed to parse LLM response', raw: text }, { status: 500 })
+    const text = response.choices[0].message.content ?? ''
+    lastRaw = text
+
+    const jsonText = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
+
+    try {
+      const data = JSON.parse(jsonText)
+      const validationErrors = validateGeneratedListeningScript(data, marks)
+
+      if (validationErrors.length === 0) {
+        return NextResponse.json(data)
+      }
+
+      lastErrors = validationErrors
+    } catch {
+      lastErrors = ['Response was not valid JSON.']
+    }
   }
+
+  return NextResponse.json(
+    { error: 'Failed to generate a valid listening exercise', details: lastErrors, raw: lastRaw },
+    { status: 500 }
+  )
 }

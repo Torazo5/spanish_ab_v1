@@ -1,9 +1,11 @@
 'use client'
 
 import { TrueFalseNotGivenQuestion } from '@/lib/types'
+import { getMarkLabel } from '@/lib/listening-structure'
 
 interface Props {
   question: TrueFalseNotGivenQuestion
+  markNumber: number
   answer: string
   onAnswerChange: (id: string, value: string) => void
   disabled?: boolean
@@ -15,11 +17,11 @@ const TFNG_OPTIONS: { label: string; value: 'true' | 'false' | 'not-given' }[] =
   { label: 'Not Given', value: 'not-given' },
 ]
 
-export function TfngRenderer({ question, answer, onAnswerChange, disabled }: Props) {
+export function TfngRenderer({ question, markNumber, answer, onAnswerChange, disabled }: Props) {
   return (
     <div>
       <p className="text-sm text-zinc-300">
-        <span className="font-medium text-zinc-400">{question.id}.</span> {question.text}
+        <span className="font-medium text-zinc-400">{getMarkLabel(markNumber)}.</span> {question.text}
       </p>
       <div
         className={`flex gap-2 mt-2 ${disabled ? 'pointer-events-none opacity-60' : ''}`}

@@ -1,12 +1,15 @@
 'use client'
 
 import type { PersonAttributionQuestion } from '@/lib/types'
+import { getMarkLabel } from '@/lib/listening-structure'
 
 interface Props {
   question: PersonAttributionQuestion
+  markNumber: number
   answer: string
   onAnswerChange: (id: string, value: string) => void
   disabled?: boolean
+  showLegend?: boolean
 }
 
 const BUTTONS: { value: 'A' | 'B' | 'ambos'; label: string }[] = [
@@ -15,15 +18,27 @@ const BUTTONS: { value: 'A' | 'B' | 'ambos'; label: string }[] = [
   { value: 'ambos', label: 'Ambos' },
 ]
 
-export function PersonAttributionRenderer({ question, answer, onAnswerChange, disabled = false }: Props) {
+export function PersonAttributionRenderer({
+  question,
+  markNumber,
+  answer,
+  onAnswerChange,
+  disabled = false,
+  showLegend = false,
+}: Props) {
   return (
     <div className="space-y-2">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-300/70 mb-2">
-        {question.personA} = A &middot; {question.personB} = B
-      </p>
+      {showLegend && (
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-300/70 mb-2">
+          {question.personA} = A &middot; {question.personB} = B
+        </p>
+      )}
 
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <span className="text-sm text-zinc-200 flex-1">{question.text}</span>
+        <div className="min-w-0 flex-1 space-y-1">
+          <p className="text-sm font-medium text-zinc-400">{getMarkLabel(markNumber)}.</p>
+          <span className="text-sm text-zinc-200">{question.text}</span>
+        </div>
 
         <div
           className={`flex gap-1.5 shrink-0 ${disabled ? 'pointer-events-none opacity-60' : ''}`}

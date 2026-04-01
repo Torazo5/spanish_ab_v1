@@ -1,5 +1,6 @@
 'use client'
 import type { AnswerResult, TypedListeningQuestion } from '@/lib/types'
+import { getMarkLabel } from '@/lib/listening-structure'
 
 interface Props {
   results: AnswerResult[]
@@ -11,6 +12,9 @@ interface Props {
 
 export function FeedbackPanel({ results, questions, totalScore, maxScore, encouragement }: Props) {
   const pct = Math.round((totalScore / maxScore) * 100)
+  const questionMap = new Map(
+    questions.map((question, index) => [question.id, { question, markNumber: index + 1 }])
+  )
 
   return (
     <div className="space-y-4">
@@ -28,8 +32,9 @@ export function FeedbackPanel({ results, questions, totalScore, maxScore, encour
       <p className="text-sm text-zinc-400 italic">{encouragement}</p>
 
       <div className="space-y-3">
-        {results.map((result, i) => {
-          const question = questions.find((q) => q.id === result.questionId)
+        {results.map((result) => {
+          const entry = questionMap.get(result.questionId)
+          const question = entry?.question
           const isGapFill = question?.type === 'gap-fill'
           const marksLabel = result.marks !== undefined
             ? `${result.marks} / ${question?.marks ?? '?'} mark${(question?.marks ?? 1) !== 1 ? 's' : ''}`
@@ -50,7 +55,10 @@ export function FeedbackPanel({ results, questions, totalScore, maxScore, encour
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2 mb-0.5">
-                    <p className="text-xs text-zinc-400">{i + 1}. {question?.text}</p>
+                    <p className="text-xs text-zinc-400">
+                      {entry ? `${getMarkLabel(entry.markNumber)}. ` : ''}
+                      {question?.text}
+                    </p>
                     {marksLabel && (
                       <span className={`text-xs font-medium shrink-0 ${result.correct ? 'text-green-400' : 'text-red-400'}`}>
                         {marksLabel}

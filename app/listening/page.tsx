@@ -146,7 +146,7 @@ export default function ListeningPage() {
               </p>
               <h2 className="text-lg font-semibold text-white">Choose a topic</h2>
               <p className="text-sm text-zinc-400">
-                Pick a theme and generate a Spanish listening exercise with questions.
+                Pick a theme and generate a Spanish listening exercise with exam-style mark blocks.
               </p>
             </div>
 
@@ -183,7 +183,7 @@ export default function ListeningPage() {
             <div className="space-y-1">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-300/70">Mark Target</p>
               <h2 className="text-lg font-semibold text-white">How many marks?</h2>
-              <p className="text-sm text-zinc-400">Total marks determines how many questions are generated.</p>
+              <p className="text-sm text-zinc-400">Total marks determines how many one-mark entries are generated.</p>
             </div>
 
             <div className="grid grid-cols-4 gap-2">
@@ -296,7 +296,7 @@ export default function ListeningPage() {
           {script && pageState === 'review' && results && (
             <Card className="border-white/10 bg-gradient-to-br from-zinc-900 via-zinc-900 to-black p-5 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.9)] space-y-4">
               <p className="text-xs text-zinc-500 text-center">
-                Original score: <span className="text-white font-semibold">{results.totalScore} / {results.maxScore}</span> — amending answers here does not change your score
+                Original score: <span className="text-white font-semibold">{results.totalScore} / {results.maxScore}</span> - amending answers here does not change your score
               </p>
               <TypedQuestionPanel
                 questions={script.questions}

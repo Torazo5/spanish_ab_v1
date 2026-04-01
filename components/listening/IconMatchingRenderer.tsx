@@ -3,6 +3,7 @@
 import * as LucideIcons from 'lucide-react'
 import type { LucideProps } from 'lucide-react'
 import type { IconMatchingQuestion } from '@/lib/types'
+import { getMarkLabel } from '@/lib/listening-structure'
 
 function toPascalCase(kebab: string): string {
   return kebab.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('')
@@ -16,18 +17,19 @@ function getIcon(name: string): React.ComponentType<LucideProps> {
 
 interface Props {
   question: IconMatchingQuestion
+  markNumber: number
   answer: string
   onAnswerChange: (id: string, value: string) => void
   disabled?: boolean
 }
 
-export function IconMatchingRenderer({ question, answer, onAnswerChange, disabled = false }: Props) {
+export function IconMatchingRenderer({ question, markNumber, answer, onAnswerChange, disabled = false }: Props) {
   const cols = question.icons.length <= 3 ? 'grid-cols-3' : 'grid-cols-4'
 
   return (
     <div className="space-y-2">
       <p className="text-sm text-zinc-300">
-        <span className="font-medium text-zinc-400">{question.id}.</span> {question.text}
+        <span className="font-medium text-zinc-400">{getMarkLabel(markNumber)}.</span> {question.text}
       </p>
 
       <div className={`grid ${cols} gap-2 mt-2 ${disabled ? 'pointer-events-none opacity-60' : ''}`}>

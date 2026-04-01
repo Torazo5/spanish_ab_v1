@@ -1,19 +1,21 @@
 'use client'
 
 import { McqQuestion } from '@/lib/types'
+import { getMarkLabel } from '@/lib/listening-structure'
 
 interface Props {
   question: McqQuestion
+  markNumber: number
   answer: string
   onAnswerChange: (id: string, value: string) => void
   disabled?: boolean
 }
 
-export function McqRenderer({ question, answer, onAnswerChange, disabled }: Props) {
+export function McqRenderer({ question, markNumber, answer, onAnswerChange, disabled }: Props) {
   return (
     <div>
       <p className="text-sm text-zinc-300">
-        <span className="font-medium text-zinc-400">{question.id}.</span> {question.text}
+        <span className="font-medium text-zinc-400">{getMarkLabel(markNumber)}.</span> {question.text}
       </p>
       <div className={`space-y-2 mt-2 ${disabled ? 'pointer-events-none opacity-60' : ''}`}>
         {question.options.map((option, i) => {

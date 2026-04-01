@@ -27,7 +27,17 @@ export async function POST(req: NextRequest) {
 
   const response = await groq.chat.completions.create({
     model: MODELS.listening,
-    messages: [{ role: 'user', content: checkAnswersPrompt(script, gapFillQuestions, answers) }],
+    messages: [{
+      role: 'user',
+      content: checkAnswersPrompt(
+        script,
+        gapFillQuestions.map((question) => ({
+          ...question,
+          markNumber: questions.findIndex((entry) => entry.id === question.id) + 1,
+        })),
+        answers
+      ),
+    }],
     max_tokens: 800,
     temperature: 0.3,
   })
