@@ -9,6 +9,7 @@ import { TypedQuestionPanel } from '@/components/listening/TypedQuestionPanel'
 import { FeedbackPanel } from '@/components/listening/FeedbackPanel'
 import { IB_TOPICS, MARK_OPTIONS, type MarkOption } from '@/lib/types'
 import type { TypedListeningScript, AnswerResult, IbTopic } from '@/lib/types'
+import { gradeLocally } from '@/lib/grading'
 
 type PageState = 'setup' | 'loaded' | 'answered'
 
@@ -58,14 +59,56 @@ export default function ListeningPage() {
     setError('')
 
     try {
-      const res = await fetch('/api/listening/check-answers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ script: script.script, questions: script.questions, answers }),
+      // Grade deterministic types client-side
+      const localResults = gradeLocally(script.questions, answers)
+
+      // Send only gap-fill questions to AI
+      const gapFillQuestions = script.questions.filter((q) => q.type === 'gap-fill')
+      let aiResults: AnswerResult[] = []
+      let encouragement = ''
+
+      if (gapFillQuestions.length > 0) {
+        const res = await fetch('/api/listening/check-answers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ script: script.script, questions: script.questions, answers }),
+        })
+        const data = await res.json()
+        if (data.error) throw new Error(data.error)
+        aiResults = data.results ?? []
+        encouragement = data.encouragement ?? ''
+      }
+
+      // Merge results preserving question order
+      const allResults: AnswerResult[] = script.questions.map((q) => {
+        if (q.type === 'gap-fill') {
+          return aiResults.find((r) => r.questionId === q.id) ?? {
+            questionId: q.id,
+            correct: false,
+            feedback: 'No feedback available.',
+            marks: 0,
+          }
+        }
+        return localResults.find((r) => r.questionId === q.id) ?? {
+          questionId: q.id,
+          correct: false,
+          feedback: '',
+          marks: 0,
+        }
       })
-      const data = await res.json()
-      if (data.error) throw new Error(data.error)
-      setResults(data)
+
+      // Compute score from marks fields
+      const totalScore = allResults.reduce((sum, r) => {
+        return sum + (r.marks ?? (r.correct ? 1 : 0))
+      }, 0)
+      const maxScore = script.totalMarks
+
+      setResults({
+        results: allResults,
+        totalScore,
+        maxScore,
+        encouragement: encouragement || (totalScore >= maxScore * 0.8 ? 'Great work!' : 'Keep practising!'),
+      })
       setPageState('answered')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to check answers')

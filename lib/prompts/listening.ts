@@ -59,14 +59,17 @@ Respond with ONLY valid JSON in this exact format, no other text:
 
 export function checkAnswersPrompt(
   script: string,
-  questions: { id: string; text: string }[],
-  answers: string[]
+  questions: { id: string; text: string; marks: number; sentence?: string }[],
+  answers: Record<string, string>
 ): string {
   const qa = questions
-    .map((q, i) => `Q${i + 1}: ${q.text}\nAnswer: ${answers[i] || '(no answer)'}`)
+    .map((q, i) => {
+      const prompt = q.sentence ? `${q.text}\n  Sentence: ${q.sentence}` : q.text
+      return `Q${i + 1} (${q.marks} mark${q.marks !== 1 ? 's' : ''}): ${prompt}\nAnswer: ${answers[q.id] || '(no answer)'}`
+    })
     .join('\n\n')
 
-  return `You are grading answers to a Spanish listening comprehension exercise.
+  return `You are grading gap-fill answers to a Spanish listening comprehension exercise.
 
 Script:
 ${script}
@@ -76,17 +79,18 @@ ${qa}
 
 Grade each answer. Be generous — accept answers that show understanding even if phrasing is imperfect. Full marks for correct answers in English or Spanish.
 
+For each question, return marks awarded (0 to the question's mark value).
+
 Respond with ONLY valid JSON, no other text:
 {
   "results": [
     {
       "questionId": "q1",
       "correct": true,
+      "marks": 1,
       "feedback": "brief feedback in English"
     }
   ],
-  "totalScore": 4,
-  "maxScore": 5,
   "encouragement": "one encouraging sentence"
 }`
 }

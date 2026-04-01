@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: IB-Authentic Listening Practice
-status: phase_complete
-stopped_at: Phase 02 complete — verified
-last_updated: "2026-04-01T05:00:00.000Z"
+status: verifying
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-04-01T06:23:08.783Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 5
+  completed_phases: 1
+  total_plans: 2
   completed_plans: 5
   percent: 50
 ---
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 
 Phase: 02 (question-type-ui) — COMPLETE ✓
 Plan: 3 of 3
-Status: Verified — all 5 question type renderers shipped and browser-confirmed
+Status: Phase complete — ready for verification
 Last activity: 2026-04-01
 
 Progress: [█████░░░░░] 50%
@@ -57,6 +57,7 @@ Progress: [█████░░░░░] 50%
 | Phase 02-question-type-ui P01 | 12 | 3 tasks | 6 files |
 | Phase 02-question-type-ui P02 | 8min | 2 tasks | 2 files |
 | Phase 02-question-type-ui P03 | 25 | 3 tasks | 3 files |
+| Phase 03-grading P01 | 8 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,8 @@ Recent decisions affecting current work:
 - [Phase 02-question-type-ui]: PersonAttributionRenderer uses inline A/B/Ambos toggle row with person identification eyebrow header (personA=A, personB=B)
 - [Phase 02-question-type-ui]: TypedQuestionPanel is a pure dispatcher with no rendering logic — switch(q.type) routes to individual renderer files
 - [Phase 02-question-type-ui]: lucide-react icons require null-check (icon != null) not typeof function — exports are forwardRef objects
+- [Phase 03-grading]: gradeLocally returns GradedResult extending AnswerResult with marks field for per-question mark tally
+- [Phase 03-grading]: Split grading: deterministic types graded client-side via gradeLocally, gap-fill sent to AI; merged preserving question order
 
 ### Pending Todos
 
@@ -87,6 +90,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-01T04:06:10.961Z
-Stopped at: Completed 02-03-PLAN.md
+Last session: 2026-04-01T06:23:08.781Z
+Stopped at: Completed 03-01-PLAN.md
 Resume file: None

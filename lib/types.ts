@@ -131,6 +131,7 @@ export interface AnswerResult {
   questionId: string
   correct: boolean
   feedback: string
+  marks?: number
 }
 
 export type OralPhase =

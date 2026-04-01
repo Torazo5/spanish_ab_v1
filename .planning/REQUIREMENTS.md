@@ -15,8 +15,8 @@ Requirements for milestone v1.1: IB-Authentic Listening Practice.
 
 ### Grading
 
-- [ ] **LISTEN-02**: MCQ, True/False/Not Given, icon-matching, and person-attribution questions are graded instantly client-side
-- [ ] **LISTEN-03**: Open-ended and gap-fill questions are graded by AI with explanatory feedback
+- [x] **LISTEN-02**: MCQ, True/False/Not Given, icon-matching, and person-attribution questions are graded instantly client-side
+- [x] **LISTEN-03**: Open-ended and gap-fill questions are graded by AI with explanatory feedback
 
 ### Transcript & Review
 
@@ -54,8 +54,8 @@ Requirements for milestone v1.1: IB-Authentic Listening Practice.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | LISTEN-01 | Phase 2 | Complete |
-| LISTEN-02 | Phase 3 | Pending |
-| LISTEN-03 | Phase 3 | Pending |
+| LISTEN-02 | Phase 3 | Complete |
+| LISTEN-03 | Phase 3 | Complete |
 | LISTEN-04 | Phase 2 | Complete |
 | LISTEN-05 | Phase 2 | Complete |
 | LISTEN-06 | Phase 4 | Pending |
