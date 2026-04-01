@@ -1,9 +1,9 @@
 'use client'
-import type { AnswerResult, ListeningQuestion } from '@/lib/types'
+import type { AnswerResult, TypedListeningQuestion } from '@/lib/types'
 
 interface Props {
   results: AnswerResult[]
-  questions: ListeningQuestion[]
+  questions: TypedListeningQuestion[]
   totalScore: number
   maxScore: number
   encouragement: string
