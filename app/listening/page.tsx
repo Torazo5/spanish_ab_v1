@@ -5,10 +5,10 @@ import { ArrowLeft, Loader2, Headphones } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ListeningPlayer } from '@/components/listening/ListeningPlayer'
-import { QuestionPanel } from '@/components/listening/QuestionPanel'
+import { TypedQuestionPanel } from '@/components/listening/TypedQuestionPanel'
 import { FeedbackPanel } from '@/components/listening/FeedbackPanel'
 import { IB_TOPICS, MARK_OPTIONS, type MarkOption } from '@/lib/types'
-import type { ListeningScript, AnswerResult, IbTopic } from '@/lib/types'
+import type { TypedListeningScript, AnswerResult, IbTopic } from '@/lib/types'
 
 type PageState = 'setup' | 'loaded' | 'answered'
 
@@ -17,8 +17,8 @@ export default function ListeningPage() {
   const [marks, setMarks] = useState<MarkOption>(10)
   const [pageState, setPageState] = useState<PageState>('setup')
   const [loading, setLoading] = useState(false)
-  const [script, setScript] = useState<ListeningScript | null>(null)
-  const [answers, setAnswers] = useState<string[]>([])
+  const [script, setScript] = useState<TypedListeningScript | null>(null)
+  const [answers, setAnswers] = useState<Record<string, string>>({})
   const [results, setResults] = useState<{
     results: AnswerResult[]
     totalScore: number
@@ -31,7 +31,7 @@ export default function ListeningPage() {
     setLoading(true)
     setError('')
     setScript(null)
-    setAnswers([])
+    setAnswers({})
     setResults(null)
 
     try {
@@ -43,7 +43,7 @@ export default function ListeningPage() {
       const data = await res.json()
       if (data.error) throw new Error(data.error)
       setScript(data)
-      setAnswers(new Array(data.questions.length).fill(''))
+      setAnswers({})
       setPageState('loaded')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to generate exercise')
@@ -193,15 +193,15 @@ export default function ListeningPage() {
           {/* Questions */}
           {script && pageState !== 'answered' && (
             <Card className="border-white/10 bg-gradient-to-br from-zinc-900 via-zinc-900 to-black p-5 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.9)] space-y-4">
-              <QuestionPanel
+              <TypedQuestionPanel
                 questions={script.questions}
                 answers={answers}
-                onAnswerChange={(i, v) => setAnswers((a) => { const next = [...a]; next[i] = v; return next })}
+                onAnswerChange={(id, value) => setAnswers(prev => ({ ...prev, [id]: value }))}
                 disabled={loading}
               />
               <button
                 onClick={checkAnswers}
-                disabled={loading || answers.every((a) => !a.trim())}
+                disabled={loading || !Object.values(answers).some(v => v.trim())}
                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-500 py-3 text-sm font-semibold tracking-wide text-white shadow-[0_24px_45px_-28px_rgba(56,189,248,0.95)] transition-all hover:bg-sky-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {loading ? (
