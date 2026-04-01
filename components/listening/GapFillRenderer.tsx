@@ -1,7 +1,7 @@
 'use client'
 
 import { Fragment } from 'react'
-import { GapFillQuestion } from '@/lib/types'
+import type { AnswerResult, GapFillQuestion } from '@/lib/types'
 
 interface Props {
   questions: Array<{
@@ -11,9 +11,16 @@ interface Props {
   answers: Record<string, string>
   onAnswerChange: (id: string, value: string) => void
   disabled?: boolean
+  resultsByQuestionId?: Record<string, AnswerResult>
 }
 
-export function GapFillRenderer({ questions, answers, onAnswerChange, disabled }: Props) {
+export function GapFillRenderer({
+  questions,
+  answers,
+  onAnswerChange,
+  disabled,
+  resultsByQuestionId,
+}: Props) {
   const prompt = questions[0]?.question.text ?? 'Completa el texto.'
 
   return (
@@ -26,6 +33,12 @@ export function GapFillRenderer({ questions, answers, onAnswerChange, disabled }
         {questions.map(({ question, markNumber }, index) => {
           const parts = question.sentence.split('___')
           const answer = answers[question.id] ?? ''
+          const result = resultsByQuestionId?.[question.id]
+          const inputStateClass = result == null
+            ? 'border-zinc-600 focus:border-sky-400'
+            : result.correct
+              ? 'border-green-500/80 text-green-100'
+              : 'border-red-500/80 text-red-100'
 
           return (
             <Fragment key={question.id}>
@@ -36,7 +49,7 @@ export function GapFillRenderer({ questions, answers, onAnswerChange, disabled }
                   {markNumber}
                 </span>
                 <input
-                  className="ml-1 inline-block w-24 border-b-2 border-zinc-600 bg-transparent px-1 text-center text-sm text-zinc-100 outline-none transition-colors duration-200 focus:border-sky-400"
+                  className={`ml-1 inline-block w-24 border-b-2 bg-transparent px-1 text-center text-sm outline-none transition-colors duration-200 ${inputStateClass}`}
                   aria-label={`Mark ${markNumber}`}
                   value={answer}
                   onChange={(e) => onAnswerChange(question.id, e.target.value)}
@@ -45,6 +58,20 @@ export function GapFillRenderer({ questions, answers, onAnswerChange, disabled }
                 />
               </span>
               <span>{parts[1]}</span>
+              {result && (
+                <span className={`ml-2 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
+                  result.correct
+                    ? 'border-green-500/30 bg-green-500/10 text-green-300'
+                    : 'border-red-500/30 bg-red-500/10 text-red-300'
+                }`}>
+                  {result.correct ? 'Correct' : 'Incorrect'}
+                </span>
+              )}
+              {result && !result.correct && result.correctAnswer && (
+                <span className="ml-2 text-xs text-green-300">
+                  Correct answer: {result.correctAnswer}
+                </span>
+              )}
             </Fragment>
           )
         })}

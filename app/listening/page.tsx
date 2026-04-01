@@ -273,6 +273,7 @@ export default function ListeningPage() {
               <FeedbackPanel
                 results={results.results}
                 questions={script!.questions}
+                answers={answers}
                 totalScore={results.totalScore}
                 maxScore={results.maxScore}
                 encouragement={results.encouragement}

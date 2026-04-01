@@ -1,5 +1,5 @@
 'use client'
-import type { TypedListeningQuestion } from '@/lib/types'
+import type { AnswerResult, TypedListeningQuestion } from '@/lib/types'
 import { McqRenderer } from '@/components/listening/McqRenderer'
 import { TfngRenderer } from '@/components/listening/TfngRenderer'
 import { GapFillRenderer } from '@/components/listening/GapFillRenderer'
@@ -16,9 +16,16 @@ interface Props {
   answers: Record<string, string>
   onAnswerChange: (id: string, value: string) => void
   disabled?: boolean
+  resultsByQuestionId?: Record<string, AnswerResult>
 }
 
-export function TypedQuestionPanel({ questions, answers, onAnswerChange, disabled }: Props) {
+export function TypedQuestionPanel({
+  questions,
+  answers,
+  onAnswerChange,
+  disabled,
+  resultsByQuestionId,
+}: Props) {
   const blocks = groupQuestionsIntoMarkBlocks(questions)
 
   return (
@@ -51,6 +58,7 @@ export function TypedQuestionPanel({ questions, answers, onAnswerChange, disable
               answers={answers}
               onAnswerChange={onAnswerChange}
               disabled={disabled}
+              resultsByQuestionId={resultsByQuestionId}
             />
           ) : (
             <div className="space-y-4">
@@ -67,6 +75,7 @@ export function TypedQuestionPanel({ questions, answers, onAnswerChange, disable
                         answer={answer}
                         onAnswerChange={onAnswerChange}
                         disabled={disabled}
+                        result={resultsByQuestionId?.[question.id]}
                       />
                     )
                   case 'true-false-notgiven':
@@ -78,6 +87,7 @@ export function TypedQuestionPanel({ questions, answers, onAnswerChange, disable
                         answer={answer}
                         onAnswerChange={onAnswerChange}
                         disabled={disabled}
+                        result={resultsByQuestionId?.[question.id]}
                       />
                     )
                   case 'gap-fill':
@@ -91,6 +101,7 @@ export function TypedQuestionPanel({ questions, answers, onAnswerChange, disable
                         answer={answer}
                         onAnswerChange={onAnswerChange}
                         disabled={disabled}
+                        result={resultsByQuestionId?.[question.id]}
                       />
                     )
                   case 'person-attribution':
@@ -103,6 +114,7 @@ export function TypedQuestionPanel({ questions, answers, onAnswerChange, disable
                         onAnswerChange={onAnswerChange}
                         disabled={disabled}
                         showLegend={index === 0}
+                        result={resultsByQuestionId?.[question.id]}
                       />
                     )
                 }
