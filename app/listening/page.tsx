@@ -7,11 +7,12 @@ import { Card } from '@/components/ui/card'
 import { ListeningPlayer } from '@/components/listening/ListeningPlayer'
 import { TypedQuestionPanel } from '@/components/listening/TypedQuestionPanel'
 import { FeedbackPanel } from '@/components/listening/FeedbackPanel'
+import { TranscriptPanel } from '@/components/listening/TranscriptPanel'
 import { IB_TOPICS, MARK_OPTIONS, type MarkOption } from '@/lib/types'
 import type { TypedListeningScript, AnswerResult, IbTopic } from '@/lib/types'
 import { gradeLocally } from '@/lib/grading'
 
-type PageState = 'setup' | 'loaded' | 'answered'
+type PageState = 'setup' | 'loaded' | 'answered' | 'review'
 
 export default function ListeningPage() {
   const [topic, setTopic] = useState<IbTopic>('school')
@@ -233,8 +234,15 @@ export default function ListeningPage() {
             </Card>
           )}
 
+          {/* Transcript — visible after generation, all non-setup states */}
+          {script && pageState !== 'setup' && (
+            <Card className="border-white/10 bg-gradient-to-br from-zinc-900 via-zinc-900 to-black p-5 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.9)]">
+              <TranscriptPanel script={script.script} defaultOpen={pageState === 'review'} />
+            </Card>
+          )}
+
           {/* Questions */}
-          {script && pageState !== 'answered' && (
+          {script && (pageState === 'loaded') && (
             <Card className="border-white/10 bg-gradient-to-br from-zinc-900 via-zinc-900 to-black p-5 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.9)] space-y-4">
               <TypedQuestionPanel
                 questions={script.questions}
@@ -257,7 +265,7 @@ export default function ListeningPage() {
           )}
 
           {/* Results */}
-          {results && (
+          {results && pageState === 'answered' && (
             <Card className="border-white/10 bg-gradient-to-br from-zinc-900 via-zinc-900 to-black p-5 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.9)]">
               <FeedbackPanel
                 results={results.results}
