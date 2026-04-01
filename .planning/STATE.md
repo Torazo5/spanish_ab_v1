@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: IB-Authentic Listening Practice
-status: verifying
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-04-01T08:08:50.511Z"
-last_activity: 2026-04-01
+status: executing
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-04-01T08:34:00Z"
+last_activity: 2026-04-01 -- Phase 04 Plan 01 complete
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
-  percent: 50
+  total_plans: 9
+  completed_plans: 8
+  percent: 56
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** Authentic IB exam-style practice that a student can run on their own machine for free.
-**Current focus:** Phase 03 — grading
+**Current focus:** Phase 04 — transcript-review
 
 ## Current Position
 
-Phase: 4
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-04-01
+Phase: 04 (transcript-review) — EXECUTING
+Plan: 2 of 2
+Status: Executing Phase 04
+Last activity: 2026-04-01 -- Completed 04-01-PLAN.md
 
-Progress: [█████░░░░░] 50%
+Progress: [█████▌░░░░] 56%
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Progress: [█████░░░░░] 50%
 | Phase 02-question-type-ui P03 | 25 | 3 tasks | 3 files |
 | Phase 03-grading P01 | 8 | 2 tasks | 5 files |
 | Phase 03-grading P02 | 20 | 2 tasks | 3 files |
+| Phase 04-transcript-review P01 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Recent decisions affecting current work:
 - [Phase 03-grading]: Split grading: deterministic types graded client-side via gradeLocally, gap-fill sent to AI; merged preserving question order
 - [Phase 03-grading]: correctAnswer field added as optional string to AnswerResult; gradeLocally helpers populate it for all four deterministic types (mcq, tfng, icon, person-attribution)
 - [Phase 03-grading]: FeedbackPanel shows marks-based score (X / Y marks) with correct-answer reveal for wrong deterministic responses and AI feedback text for gap-fill
+- [Phase 04-transcript-review]: TranscriptPanel placed between ListeningPlayer and Questions cards in page layout — logical reading flow (hear audio, see script, answer questions)
+- [Phase 04-transcript-review]: defaultOpen={pageState === 'review'} wires Plan 02 review state to auto-open transcript; PageState extended with 'review' now as foundation
 
 ### Pending Todos
 
@@ -93,6 +96,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-01T08:04:53.751Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-04-01T08:34:00Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None

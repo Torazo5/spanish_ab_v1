@@ -70,7 +70,7 @@ Plans:
   4. Amended answers in review mode do not alter the originally submitted score
 **Plans:** 2 plans
 Plans:
-- [ ] 04-01-PLAN.md — Create TranscriptPanel component and integrate transcript reveal into listening page
+- [x] 04-01-PLAN.md — Create TranscriptPanel component and integrate transcript reveal into listening page
 - [ ] 04-02-PLAN.md — Add review mode with editable questions, locked score, and transcript auto-open
 
 ## Progress
@@ -83,4 +83,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Generation Foundation | v1.1 | 2/2 | Complete   | 2026-03-31 |
 | 2. Question Type UI | v1.1 | 3/3 | Complete   | 2026-04-01 |
 | 3. Grading | v1.1 | 2/2 | Complete   | 2026-04-01 |
-| 4. Transcript & Review | v1.1 | 0/2 | In progress | - |
+| 4. Transcript & Review | v1.1 | 1/2 | In progress | - |
