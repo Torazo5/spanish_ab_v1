@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: IB-Authentic Listening Practice
-status: verifying
-stopped_at: Completed 02-03-PLAN.md
-last_updated: "2026-04-01T04:06:10.963Z"
+status: phase_complete
+stopped_at: Phase 02 complete — verified
+last_updated: "2026-04-01T05:00:00.000Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 5
   completed_plans: 5
-  percent: 0
+  percent: 50
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** Authentic IB exam-style practice that a student can run on their own machine for free.
-**Current focus:** Phase 02 — question-type-ui
+**Current focus:** Phase 03 — grading
 
 ## Current Position
 
-Phase: 02 (question-type-ui) — EXECUTING
+Phase: 02 (question-type-ui) — COMPLETE ✓
 Plan: 3 of 3
-Status: Phase complete — ready for verification
+Status: Verified — all 5 question type renderers shipped and browser-confirmed
 Last activity: 2026-04-01
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
