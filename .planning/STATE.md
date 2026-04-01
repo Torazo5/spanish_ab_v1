@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: IB-Authentic Listening Practice
 status: executing
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-04-01T08:34:00Z"
-last_activity: 2026-04-01 -- Phase 04 Plan 01 complete
+stopped_at: "Checkpoint: 04-02 Task 2 human-verify — awaiting user verification of transcript + review mode"
+last_updated: "2026-04-01T08:41:09.521Z"
+last_activity: 2026-04-01 -- Completed 04-01-PLAN.md
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 9
-  completed_plans: 8
+  completed_plans: 9
   percent: 56
 ---
 
@@ -85,6 +85,8 @@ Recent decisions affecting current work:
 - [Phase 03-grading]: FeedbackPanel shows marks-based score (X / Y marks) with correct-answer reveal for wrong deterministic responses and AI feedback text for gap-fill
 - [Phase 04-transcript-review]: TranscriptPanel placed between ListeningPlayer and Questions cards in page layout — logical reading flow (hear audio, see script, answer questions)
 - [Phase 04-transcript-review]: defaultOpen={pageState === 'review'} wires Plan 02 review state to auto-open transcript; PageState extended with 'review' now as foundation
+- [Phase 04-transcript-review]: reviewAnswers initialised in checkAnswers (not button handler) to avoid stale closure — guarantees snapshot is current answers
+- [Phase 04-transcript-review]: results state only mutated inside checkAnswers — review mode reads results read-only, preventing score change on reviewAnswers update
 
 ### Pending Todos
 
@@ -96,6 +98,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-01T08:34:00Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-04-01T08:41:03.427Z
+Stopped at: Checkpoint: 04-02 Task 2 human-verify — awaiting user verification of transcript + review mode
 Resume file: None

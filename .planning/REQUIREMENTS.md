@@ -21,7 +21,7 @@ Requirements for milestone v1.1: IB-Authentic Listening Practice.
 ### Transcript & Review
 
 - [x] **LISTEN-06**: User can reveal the full audio transcript at any point during a session
-- [ ] **LISTEN-07**: After submitting answers, user can enter "Review with transcript" mode to see the script and amend responses for learning
+- [x] **LISTEN-07**: After submitting answers, user can enter "Review with transcript" mode to see the script and amend responses for learning
 
 ### Prompt Quality
 
@@ -59,7 +59,7 @@ Requirements for milestone v1.1: IB-Authentic Listening Practice.
 | LISTEN-04 | Phase 2 | Complete |
 | LISTEN-05 | Phase 2 | Complete |
 | LISTEN-06 | Phase 4 | Complete |
-| LISTEN-07 | Phase 4 | Pending |
+| LISTEN-07 | Phase 4 | Complete |
 | LISTEN-08 | Phase 1 | Complete |
 | LISTEN-09 | Phase 1 | Complete |
 

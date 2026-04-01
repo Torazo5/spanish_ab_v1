@@ -17,7 +17,7 @@
 - [x] **Phase 1: Generation Foundation** - AI generates authentic, mark-configurable, mixed-type question sets as structured JSON (completed 2026-03-31)
 - [x] **Phase 2: Question Type UI** - All 5 IB question types are renderable and interactive in the browser (completed 2026-04-01)
 - [x] **Phase 3: Grading** - Deterministic types graded client-side; open-ended and gap-fill graded by AI with feedback (completed 2026-04-01)
-- [ ] **Phase 4: Transcript & Review** - Full transcript reveal available at any time; post-submit review mode for learning
+- [x] **Phase 4: Transcript & Review** - Full transcript reveal available at any time; post-submit review mode for learning (completed 2026-04-01)
 
 ## Phase Details
 
@@ -68,10 +68,10 @@ Plans:
   2. After submitting, a "Review with transcript" button appears and activates review mode
   3. In review mode, the full script is visible alongside the questions and the user can change any answer
   4. Amended answers in review mode do not alter the originally submitted score
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 04-01-PLAN.md — Create TranscriptPanel component and integrate transcript reveal into listening page
-- [ ] 04-02-PLAN.md — Add review mode with editable questions, locked score, and transcript auto-open
+- [x] 04-02-PLAN.md — Add review mode with editable questions, locked score, and transcript auto-open
 
 ## Progress
 
@@ -83,4 +83,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Generation Foundation | v1.1 | 2/2 | Complete   | 2026-03-31 |
 | 2. Question Type UI | v1.1 | 3/3 | Complete   | 2026-04-01 |
 | 3. Grading | v1.1 | 2/2 | Complete   | 2026-04-01 |
-| 4. Transcript & Review | v1.1 | 1/2 | In progress | - |
+| 4. Transcript & Review | v1.1 | 2/2 | Complete   | 2026-04-01 |
