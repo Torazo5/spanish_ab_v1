@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: IB-Authentic Listening Practice
 status: executing
-stopped_at: Completed 02-question-type-ui 02-01-PLAN.md
-last_updated: "2026-04-01T03:57:09.468Z"
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-04-01T03:57:18.353Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 4
@@ -71,6 +71,8 @@ Recent decisions affecting current work:
 - [Phase 01-generation-foundation]: Chips are disabled (pointer-events-none opacity-60) during loading to preserve layout
 - [Phase 02-question-type-ui]: sentence field added to GapFillQuestion after text field, preserving text as question label
 - [Phase 02-question-type-ui]: All renderers use uniform (question, answer, onAnswerChange, disabled?) prop interface for TypedQuestionPanel dispatcher
+- [Phase 02-question-type-ui]: Icon chips use identical MarkSelector visual pattern (sky-400 border, glow, dot) with dynamic Lucide lookup and HelpCircle fallback
+- [Phase 02-question-type-ui]: PersonAttributionRenderer uses inline A/B/Ambos toggle row with person identification eyebrow header (personA=A, personB=B)
 
 ### Pending Todos
 
@@ -82,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-01T03:57:01.112Z
-Stopped at: Completed 02-question-type-ui 02-01-PLAN.md
+Last session: 2026-04-01T03:57:18.350Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
