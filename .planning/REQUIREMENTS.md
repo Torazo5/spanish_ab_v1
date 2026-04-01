@@ -9,7 +9,7 @@ Requirements for milestone v1.1: IB-Authentic Listening Practice.
 
 ### Question Types
 
-- [ ] **LISTEN-01**: User can encounter at least 5 distinct IB-style question types in a single listening session
+- [x] **LISTEN-01**: User can encounter at least 5 distinct IB-style question types in a single listening session
 - [ ] **LISTEN-04**: Person-attribution questions present each statement with Person A / Person B / Ambos options
 - [ ] **LISTEN-05**: Icon-matching questions use Lucide icons to represent concepts (transport, weather, activities)
 
@@ -53,7 +53,7 @@ Requirements for milestone v1.1: IB-Authentic Listening Practice.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LISTEN-01 | Phase 2 | Pending |
+| LISTEN-01 | Phase 2 | Complete |
 | LISTEN-02 | Phase 3 | Pending |
 | LISTEN-03 | Phase 3 | Pending |
 | LISTEN-04 | Phase 2 | Pending |

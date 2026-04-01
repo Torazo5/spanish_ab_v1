@@ -78,6 +78,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1. Generation Foundation | v1.1 | 2/2 | Complete   | 2026-03-31 |
-| 2. Question Type UI | v1.1 | 0/TBD | Not started | - |
+| 2. Question Type UI | v1.1 | 2/3 | In Progress|  |
 | 3. Grading | v1.1 | 0/TBD | Not started | - |
 | 4. Transcript & Review | v1.1 | 0/TBD | Not started | - |

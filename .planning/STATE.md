@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: IB-Authentic Listening Practice
-status: verifying
-stopped_at: Completed 01-generation-foundation/01-02-PLAN.md
-last_updated: "2026-03-31T13:24:16.797Z"
-last_activity: 2026-03-31
+status: executing
+stopped_at: Completed 02-question-type-ui 02-01-PLAN.md
+last_updated: "2026-04-01T03:57:09.468Z"
+last_activity: 2026-04-01
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 5
+  completed_plans: 4
   percent: 0
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** Authentic IB exam-style practice that a student can run on their own machine for free.
-**Current focus:** Phase 01 — generation-foundation
+**Current focus:** Phase 02 — question-type-ui
 
 ## Current Position
 
-Phase: 2
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-03-31
+Phase: 02 (question-type-ui) — EXECUTING
+Plan: 3 of 3
+Status: Ready to execute
+Last activity: 2026-04-01
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -54,6 +54,8 @@ Progress: [░░░░░░░░░░] 0%
 *Updated after each plan completion*
 | Phase 01-generation-foundation P01 | 2 | 2 tasks | 3 files |
 | Phase 01-generation-foundation P02 | 15 | 2 tasks | 1 files |
+| Phase 02-question-type-ui P01 | 12 | 3 tasks | 6 files |
+| Phase 02-question-type-ui P02 | 8min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -67,6 +69,8 @@ Recent decisions affecting current work:
 - [Phase 01-generation-foundation]: TypedListeningQuestion discriminated union as data contract; old types preserved for backward compat; default marks=10 for zero-friction callers
 - [Phase 01-generation-foundation]: Default marks=10 selected on page load for zero-friction experience
 - [Phase 01-generation-foundation]: Chips are disabled (pointer-events-none opacity-60) during loading to preserve layout
+- [Phase 02-question-type-ui]: sentence field added to GapFillQuestion after text field, preserving text as question label
+- [Phase 02-question-type-ui]: All renderers use uniform (question, answer, onAnswerChange, disabled?) prop interface for TypedQuestionPanel dispatcher
 
 ### Pending Todos
 
@@ -78,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T10:24:59.549Z
-Stopped at: Completed 01-generation-foundation/01-02-PLAN.md
+Last session: 2026-04-01T03:57:01.112Z
+Stopped at: Completed 02-question-type-ui 02-01-PLAN.md
 Resume file: None
