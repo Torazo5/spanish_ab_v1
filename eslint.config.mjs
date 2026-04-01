@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // GSD tooling — CommonJS files not subject to project lint rules
+    ".claude/**",
   ]),
 ]);
 
