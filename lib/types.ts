@@ -67,6 +67,24 @@ export type QuestionType = 'mcq' | 'true-false-notgiven' | 'gap-fill' | 'icon-ma
 
 export const MARK_OPTIONS = [5, 10, 15, 25] as const
 export type MarkOption = (typeof MARK_OPTIONS)[number]
+export type ListeningMode = 'general' | 'sequential'
+
+export const LISTENING_MODE_OPTIONS: Array<{
+  value: ListeningMode
+  label: string
+  description: string
+}> = [
+  {
+    value: 'general',
+    label: 'General mode',
+    description: 'Questions can reference any part of the transcript.',
+  },
+  {
+    value: 'sequential',
+    label: 'Sequential mode',
+    description: 'Question blocks move through the transcript paragraph by paragraph in order.',
+  },
+]
 
 export interface McqQuestion {
   type: 'mcq'
@@ -120,11 +138,20 @@ export type TypedListeningQuestion =
   | IconMatchingQuestion
   | PersonAttributionQuestion
 
+export interface ListeningQuestionBlockMetadata {
+  type: QuestionType
+  startMark: number
+  endMark: number
+  sourceParagraph?: number
+}
+
 export interface TypedListeningScript {
   script: string
   title: string
   totalMarks: number
   questions: TypedListeningQuestion[]
+  mode?: ListeningMode
+  questionBlocks?: ListeningQuestionBlockMetadata[]
 }
 
 export interface AnswerResult {

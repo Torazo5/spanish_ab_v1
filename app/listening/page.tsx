@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Loader2, Headphones } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -8,15 +8,48 @@ import { ListeningPlayer } from '@/components/listening/ListeningPlayer'
 import { TypedQuestionPanel } from '@/components/listening/TypedQuestionPanel'
 import { FeedbackPanel } from '@/components/listening/FeedbackPanel'
 import { TranscriptPanel } from '@/components/listening/TranscriptPanel'
-import { IB_TOPICS, MARK_OPTIONS, type MarkOption } from '@/lib/types'
-import type { TypedListeningScript, AnswerResult, IbTopic } from '@/lib/types'
+import { IB_TOPICS, LISTENING_MODE_OPTIONS, MARK_OPTIONS, type MarkOption } from '@/lib/types'
+import type { TypedListeningScript, AnswerResult, IbTopic, ListeningMode } from '@/lib/types'
 import { gradeLocally } from '@/lib/grading'
 
 type PageState = 'setup' | 'loaded' | 'answered' | 'review'
 
+interface PageErrorState {
+  message: string
+  details?: string[]
+  requestId?: string
+  stage?: string
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function toPageError(error: unknown, fallbackMessage: string): PageErrorState {
+  if (error instanceof Error) {
+    return { message: error.message || fallbackMessage }
+  }
+
+  if (!isRecord(error)) {
+    return { message: fallbackMessage }
+  }
+
+  return {
+    message: typeof error.message === 'string' && error.message.trim() !== '' ? error.message : fallbackMessage,
+    details:
+      Array.isArray(error.details) && error.details.every((detail) => typeof detail === 'string')
+        ? error.details.slice(0, 4)
+        : undefined,
+    requestId: typeof error.requestId === 'string' ? error.requestId : undefined,
+    stage: typeof error.stage === 'string' ? error.stage : undefined,
+  }
+}
+
 export default function ListeningPage() {
   const [topic, setTopic] = useState<IbTopic>('school')
   const [marks, setMarks] = useState<MarkOption>(10)
+  const [mode, setMode] = useState<ListeningMode>('general')
+  const [hasMounted, setHasMounted] = useState(false)
   const [pageState, setPageState] = useState<PageState>('setup')
   const [loading, setLoading] = useState(false)
   const [script, setScript] = useState<TypedListeningScript | null>(null)
@@ -28,11 +61,15 @@ export default function ListeningPage() {
     maxScore: number
     encouragement: string
   } | null>(null)
-  const [error, setError] = useState('')
+  const [error, setError] = useState<PageErrorState | null>(null)
+
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
 
   const generateScript = async () => {
     setLoading(true)
-    setError('')
+    setError(null)
     setScript(null)
     setAnswers({})
     setResults(null)
@@ -42,15 +79,22 @@ export default function ListeningPage() {
       const res = await fetch('/api/listening/generate-script', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, marks }),
+        body: JSON.stringify({ topic, marks, mode }),
       })
       const data = await res.json()
-      if (data.error) throw new Error(data.error)
+      if (!res.ok || data.error) {
+        throw {
+          message: typeof data.error === 'string' ? data.error : 'Failed to generate exercise',
+          details: Array.isArray(data.details) ? data.details : undefined,
+          requestId: typeof data.requestId === 'string' ? data.requestId : undefined,
+          stage: typeof data.stage === 'string' ? data.stage : undefined,
+        }
+      }
       setScript(data)
       setAnswers({})
       setPageState('loaded')
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to generate exercise')
+      setError(toPageError(e, 'Failed to generate exercise'))
     } finally {
       setLoading(false)
     }
@@ -59,7 +103,7 @@ export default function ListeningPage() {
   const checkAnswers = async () => {
     if (!script) return
     setLoading(true)
-    setError('')
+    setError(null)
 
     try {
       // Grade deterministic types client-side
@@ -115,7 +159,7 @@ export default function ListeningPage() {
       setReviewAnswers({ ...answers })
       setPageState('answered')
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to check answers')
+      setError(toPageError(e, 'Failed to check answers'))
     } finally {
       setLoading(false)
     }
@@ -213,8 +257,61 @@ export default function ListeningPage() {
               ))}
             </div>
 
+            {hasMounted && (
+              <>
+                <div className="space-y-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-300/70">Listening Mode</p>
+                  <h2 className="text-lg font-semibold text-white">How should the questions flow?</h2>
+                  <p className="text-sm text-zinc-400">
+                    General mode preserves the current free-reference behavior. Sequential mode keeps each mark block aligned to the next transcript paragraph.
+                  </p>
+                </div>
+
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {LISTENING_MODE_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => setMode(option.value)}
+                      disabled={loading}
+                      className={`group relative overflow-hidden rounded-2xl border px-4 py-3 text-left transition-all duration-200 active:scale-[0.99] ${
+                        loading ? 'pointer-events-none opacity-60' : ''
+                      } ${
+                        mode === option.value
+                          ? 'border-sky-400/50 bg-gradient-to-br from-sky-400/20 via-sky-500/10 to-zinc-950 text-white shadow-[0_20px_45px_-30px_rgba(56,189,248,0.95)]'
+                          : 'border-white/10 bg-gradient-to-br from-zinc-800 via-zinc-900 to-zinc-950 text-zinc-200 hover:border-sky-400/25 hover:text-white'
+                      }`}
+                    >
+                      <span className="relative flex items-start justify-between gap-3">
+                        <span className="block">
+                          <span className="block text-sm font-semibold leading-snug">{option.label}</span>
+                          <span className="mt-1 block text-xs leading-relaxed text-zinc-400">{option.description}</span>
+                        </span>
+                        <span
+                          className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full transition-all ${
+                            mode === option.value ? 'bg-sky-300 shadow-[0_0_0_6px_rgba(125,211,252,0.13)]' : 'bg-zinc-600'
+                          }`}
+                        />
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
             {error && (
-              <p className="text-xs text-red-400">{error}</p>
+              <div className="space-y-1 rounded-2xl border border-red-400/20 bg-red-950/30 px-4 py-3 text-xs text-red-200">
+                <p className="font-medium text-red-300">{error.message}</p>
+                {error.details?.map((detail) => (
+                  <p key={detail} className="text-red-200/90">{detail}</p>
+                ))}
+                {(error.stage || error.requestId) && (
+                  <p className="text-red-200/70">
+                    {[error.stage ? `stage: ${error.stage}` : null, error.requestId ? `requestId: ${error.requestId}` : null]
+                      .filter(Boolean)
+                      .join(' | ')}
+                  </p>
+                )}
+              </div>
             )}
 
             <button
@@ -279,7 +376,7 @@ export default function ListeningPage() {
                 encouragement={results.encouragement}
               />
               <button
-                onClick={() => { setPageState('setup'); setScript(null); setResults(null); setReviewAnswers({}); setError('') }}
+                onClick={() => { setPageState('setup'); setScript(null); setResults(null); setReviewAnswers({}); setError(null) }}
                 className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-zinc-800/60 py-3 text-sm font-semibold text-zinc-300 transition-all hover:bg-zinc-700/60 hover:text-white active:scale-[0.98]"
               >
                 New Exercise

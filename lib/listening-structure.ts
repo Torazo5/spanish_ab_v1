@@ -7,6 +7,13 @@ const LISTENING_BLOCK_PLANS: Record<number, number[]> = {
   25: [9, 8, 8],
 }
 
+const LISTENING_TYPE_PLANS: Record<number, QuestionType[]> = {
+  5: ['mcq', 'true-false-notgiven'],
+  10: ['gap-fill', 'mcq', 'icon-matching'],
+  15: ['true-false-notgiven', 'gap-fill', 'mcq'],
+  25: ['gap-fill', 'mcq', 'icon-matching'],
+}
+
 export interface ListeningMarkBlock {
   type: QuestionType
   startMark: number
@@ -19,6 +26,19 @@ export interface ListeningMarkBlock {
 
 export function getListeningBlockPlan(marks: number): number[] {
   return LISTENING_BLOCK_PLANS[marks] ?? [marks]
+}
+
+export function getListeningQuestionTypePlan(marks: number): QuestionType[] {
+  const blockCount = getListeningBlockPlan(marks).length
+  const defaultRotation: QuestionType[] = [
+    'mcq',
+    'true-false-notgiven',
+    'gap-fill',
+    'icon-matching',
+    'person-attribution',
+  ]
+
+  return (LISTENING_TYPE_PLANS[marks] ?? defaultRotation).slice(0, blockCount)
 }
 
 export function getMarkLabel(markNumber: number): string {
