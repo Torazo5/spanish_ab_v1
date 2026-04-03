@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateListeningScript, ListeningGenerationError } from '@/lib/listening-generator'
+import { getPrototypeCapacityMessage, getPrototypeCapacityStatus } from '@/lib/provider-errors'
 import { MARK_OPTIONS, type IbTopic, type ListeningMode } from '@/lib/types'
 
 export const runtime = 'nodejs'
@@ -35,15 +36,18 @@ export async function POST(req: NextRequest) {
     if (error instanceof ListeningGenerationError) {
       return NextResponse.json(
         {
-          error: error.message,
+          error: getPrototypeCapacityMessage(error.cause ?? error, error.message),
           requestId: error.requestId,
           stage: error.stage,
           details: error.details,
         },
-        { status: 500 }
+        { status: getPrototypeCapacityStatus(error.cause ?? error, 500) }
       )
     }
 
-    return NextResponse.json({ error: 'Listening generation failed unexpectedly.' }, { status: 500 })
+    return NextResponse.json(
+      { error: getPrototypeCapacityMessage(error, 'Listening generation failed unexpectedly.') },
+      { status: getPrototypeCapacityStatus(error, 500) }
+    )
   }
 }

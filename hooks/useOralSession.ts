@@ -17,6 +17,28 @@ interface OralSessionState {
   turnNumber: number
 }
 
+async function getApiErrorMessage(response: Response, fallback: string): Promise<string> {
+  const contentType = response.headers.get('content-type') ?? ''
+
+  try {
+    if (contentType.includes('application/json')) {
+      const data = await response.json()
+      if (data && typeof data.error === 'string' && data.error.trim() !== '') {
+        return data.error
+      }
+    } else {
+      const text = await response.text()
+      if (text.trim() !== '') {
+        return text
+      }
+    }
+  } catch {
+    // Ignore parse failures and fall back to the provided message.
+  }
+
+  return fallback
+}
+
 function createInitialState(phase: OralPhase = 'idle'): OralSessionState {
   return {
     phase,
@@ -62,7 +84,7 @@ export function useOralSession(
       })
 
       if (!res.ok || !res.body) {
-        throw new Error('Failed to generate conversation reply')
+        throw new Error(await getApiErrorMessage(res, 'Failed to generate conversation reply'))
       }
 
       const reader = res.body.getReader()
@@ -119,7 +141,7 @@ export function useOralSession(
       })
 
       if (!res.ok || !res.body) {
-        throw new Error('Failed to generate tutor feedback')
+        throw new Error(await getApiErrorMessage(res, 'Failed to generate tutor feedback'))
       }
 
       const reader = res.body.getReader()
@@ -209,7 +231,7 @@ export function useOralSession(
       })
 
       if (!transcribeRes.ok) {
-        throw new Error('Failed to transcribe recording')
+        throw new Error(await getApiErrorMessage(transcribeRes, 'Failed to transcribe recording'))
       }
 
       const { transcript } = await transcribeRes.json()

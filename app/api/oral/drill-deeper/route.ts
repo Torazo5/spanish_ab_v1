@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { groq, MODELS } from '@/lib/groq'
+import { jsonErrorResponse } from '@/lib/provider-errors'
 import type { GrammarError } from '@/lib/types'
 
 export const runtime = 'nodejs'
@@ -38,10 +39,7 @@ Brief explanation: ${error.explanation}`
 
     const explanation = response.choices[0].message.content ?? ''
     return NextResponse.json({ explanation })
-  } catch {
-    return NextResponse.json(
-      { explanation: null, error: 'Failed to generate explanation' },
-      { status: 500 }
-    )
+  } catch (error) {
+    return jsonErrorResponse(error, 'Failed to generate explanation.')
   }
 }

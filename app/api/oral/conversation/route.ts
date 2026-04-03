@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { groq, MODELS } from '@/lib/groq'
+import { textErrorResponse } from '@/lib/provider-errors'
 import { conversationSystemPrompt, openingTurnInstruction } from '@/lib/prompts/oral'
 import type { ConversationMessage, IbTopic, OralDifficulty } from '@/lib/types'
 
@@ -30,42 +31,46 @@ export async function POST(req: NextRequest) {
     messages.push({ role: 'user', content: userMessage })
   }
 
-  const stream = await groq.chat.completions.create({
-    model: MODELS.conversation,
-    messages: [
-      { role: 'system', content: conversationSystemPrompt(topic, difficulty) },
-      ...messages,
-    ],
-    max_tokens: 150,
-    temperature: 0.9,
-    stream: true,
-  })
+  try {
+    const stream = await groq.chat.completions.create({
+      model: MODELS.conversation,
+      messages: [
+        { role: 'system', content: conversationSystemPrompt(topic, difficulty) },
+        ...messages,
+      ],
+      max_tokens: 150,
+      temperature: 0.9,
+      stream: true,
+    })
 
-  const encoder = new TextEncoder()
+    const encoder = new TextEncoder()
 
-  const readable = new ReadableStream({
-    async start(controller) {
-      let fullText = ''
-      try {
-        for await (const chunk of stream) {
-          const delta = chunk.choices[0]?.delta?.content ?? ''
-          if (delta) {
-            fullText += delta
-            controller.enqueue(encoder.encode(`event: delta\ndata: ${JSON.stringify({ text: delta })}\n\n`))
+    const readable = new ReadableStream({
+      async start(controller) {
+        let fullText = ''
+        try {
+          for await (const chunk of stream) {
+            const delta = chunk.choices[0]?.delta?.content ?? ''
+            if (delta) {
+              fullText += delta
+              controller.enqueue(encoder.encode(`event: delta\ndata: ${JSON.stringify({ text: delta })}\n\n`))
+            }
           }
+          controller.enqueue(encoder.encode(`event: done\ndata: ${JSON.stringify({ fullText })}\n\n`))
+        } finally {
+          controller.close()
         }
-        controller.enqueue(encoder.encode(`event: done\ndata: ${JSON.stringify({ fullText })}\n\n`))
-      } finally {
-        controller.close()
-      }
-    },
-  })
+      },
+    })
 
-  return new Response(readable, {
-    headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
-    },
-  })
+    return new Response(readable, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+      },
+    })
+  } catch (error) {
+    return textErrorResponse(error, 'Failed to generate conversation reply.')
+  }
 }

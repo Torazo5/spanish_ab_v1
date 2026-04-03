@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { groq, MODELS } from '@/lib/groq'
+import { generateListeningText } from '@/lib/listening-llm'
+import { jsonErrorResponse } from '@/lib/provider-errors'
 import { checkAnswersPrompt } from '@/lib/prompts/listening'
 import type { TypedListeningQuestion } from '@/lib/types'
 
@@ -25,11 +26,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ results: [], encouragement: '' })
   }
 
-  const response = await groq.chat.completions.create({
-    model: MODELS.listening,
-    messages: [{
-      role: 'user',
-      content: checkAnswersPrompt(
+  try {
+    const response = await generateListeningText({
+      prompt: checkAnswersPrompt(
         script,
         gapFillQuestions.map((question) => ({
           ...question,
@@ -37,18 +36,19 @@ export async function POST(req: NextRequest) {
         })),
         answers
       ),
-    }],
-    max_tokens: 800,
-    temperature: 0.3,
-  })
+      stage: 'answer-check',
+    })
 
-  const text = response.choices[0].message.content ?? ''
-  const jsonText = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
+    const text = response.text
+    const jsonText = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
 
-  try {
-    const data = JSON.parse(jsonText)
-    return NextResponse.json(data)
-  } catch {
-    return NextResponse.json({ error: 'Failed to parse LLM response', raw: text }, { status: 500 })
+    try {
+      const data = JSON.parse(jsonText)
+      return NextResponse.json(data)
+    } catch {
+      return NextResponse.json({ error: 'Failed to parse LLM response', raw: text }, { status: 500 })
+    }
+  } catch (error) {
+    return jsonErrorResponse(error, 'Failed to check answers.')
   }
 }
