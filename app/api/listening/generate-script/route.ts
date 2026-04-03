@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateListeningScript, ListeningGenerationError } from '@/lib/listening-generator'
-import { getPrototypeCapacityMessage, getPrototypeCapacityStatus } from '@/lib/provider-errors'
+import { getPrototypeCapacityMessage, getPrototypeCapacityStatus, isCapacityError } from '@/lib/provider-errors'
 import { MARK_OPTIONS, type IbTopic, type ListeningMode } from '@/lib/types'
 
 export const runtime = 'nodejs'
@@ -34,19 +34,40 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(script)
   } catch (error) {
     if (error instanceof ListeningGenerationError) {
+      const capacityError = isCapacityError(error.cause ?? error)
+
+      if (capacityError) {
+        console.error(
+          '[listening-capacity]',
+          JSON.stringify({
+            requestId: error.requestId,
+            stage: error.stage,
+            details: error.details,
+          })
+        )
+      }
+
       return NextResponse.json(
         {
           error: getPrototypeCapacityMessage(error.cause ?? error, error.message),
+          isPrototypeCapacity: capacityError,
           requestId: error.requestId,
           stage: error.stage,
-          details: error.details,
+          details: capacityError ? undefined : error.details,
         },
         { status: getPrototypeCapacityStatus(error.cause ?? error, 500) }
       )
     }
 
+    if (isCapacityError(error)) {
+      console.error('[listening-capacity]', error)
+    }
+
     return NextResponse.json(
-      { error: getPrototypeCapacityMessage(error, 'Listening generation failed unexpectedly.') },
+      {
+        error: getPrototypeCapacityMessage(error, 'Listening generation failed unexpectedly.'),
+        isPrototypeCapacity: isCapacityError(error),
+      },
       { status: getPrototypeCapacityStatus(error, 500) }
     )
   }

@@ -8,6 +8,7 @@ import { ListeningPlayer } from '@/components/listening/ListeningPlayer'
 import { TypedQuestionPanel } from '@/components/listening/TypedQuestionPanel'
 import { FeedbackPanel } from '@/components/listening/FeedbackPanel'
 import { TranscriptPanel } from '@/components/listening/TranscriptPanel'
+import { PROTOTYPE_CAPACITY_MESSAGE } from '@/lib/provider-errors'
 import { IB_TOPICS, LISTENING_MODE_OPTIONS, MARK_OPTIONS, type MarkOption } from '@/lib/types'
 import type { TypedListeningScript, AnswerResult, IbTopic, ListeningMode } from '@/lib/types'
 import { gradeLocally } from '@/lib/grading'
@@ -19,6 +20,7 @@ interface PageErrorState {
   details?: string[]
   requestId?: string
   stage?: string
+  isPrototypeCapacity?: boolean
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -42,6 +44,10 @@ function toPageError(error: unknown, fallbackMessage: string): PageErrorState {
         : undefined,
     requestId: typeof error.requestId === 'string' ? error.requestId : undefined,
     stage: typeof error.stage === 'string' ? error.stage : undefined,
+    isPrototypeCapacity:
+      typeof error.isPrototypeCapacity === 'boolean'
+        ? error.isPrototypeCapacity
+        : typeof error.message === 'string' && error.message === PROTOTYPE_CAPACITY_MESSAGE,
   }
 }
 
@@ -94,7 +100,16 @@ export default function ListeningPage() {
       setAnswers({})
       setPageState('loaded')
     } catch (e) {
-      setError(toPageError(e, 'Failed to generate exercise'))
+      const pageError = toPageError(e, 'Failed to generate exercise')
+      if (pageError.details || pageError.requestId || pageError.stage) {
+        console.error('[ListeningPage] generation error', {
+          message: pageError.message,
+          details: pageError.details,
+          requestId: pageError.requestId,
+          stage: pageError.stage,
+        })
+      }
+      setError(pageError)
     } finally {
       setLoading(false)
     }
@@ -301,15 +316,23 @@ export default function ListeningPage() {
             {error && (
               <div className="space-y-1 rounded-2xl border border-red-400/20 bg-red-950/30 px-4 py-3 text-xs text-red-200">
                 <p className="font-medium text-red-300">{error.message}</p>
-                {error.details?.map((detail) => (
-                  <p key={detail} className="text-red-200/90">{detail}</p>
-                ))}
-                {(error.stage || error.requestId) && (
-                  <p className="text-red-200/70">
-                    {[error.stage ? `stage: ${error.stage}` : null, error.requestId ? `requestId: ${error.requestId}` : null]
-                      .filter(Boolean)
-                      .join(' | ')}
+                {error.isPrototypeCapacity ? (
+                  <p className="text-red-200/85">
+                    Sorry. We&apos;ve hit the current prototype limit for listening generation. Please try again later.
                   </p>
+                ) : (
+                  <>
+                    {error.details?.map((detail) => (
+                      <p key={detail} className="text-red-200/90">{detail}</p>
+                    ))}
+                    {(error.stage || error.requestId) && (
+                      <p className="text-red-200/70">
+                        {[error.stage ? `stage: ${error.stage}` : null, error.requestId ? `requestId: ${error.requestId}` : null]
+                          .filter(Boolean)
+                          .join(' | ')}
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
             )}
