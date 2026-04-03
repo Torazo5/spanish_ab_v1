@@ -26,6 +26,29 @@ export interface ConversationMessage {
 }
 
 export type ConversationMode = 'auto' | 'manual'
+export type OralDifficulty = 'easy' | 'medium' | 'difficult'
+
+export const ORAL_DIFFICULTY_OPTIONS: Array<{
+  value: OralDifficulty
+  label: string
+  description: string
+}> = [
+  {
+    value: 'easy',
+    label: 'Easy',
+    description: 'Luis asks direct, simple questions that are easier to answer briefly.',
+  },
+  {
+    value: 'medium',
+    label: 'Medium',
+    description: 'Balanced IB-style follow-ups that expect a clear, relevant answer.',
+  },
+  {
+    value: 'difficult',
+    label: 'Difficult',
+    description: 'Luis asks more demanding follow-ups that push for reasons, opinions, and comparisons.',
+  },
+]
 
 export type ErrorCategory =
   | 'gender'

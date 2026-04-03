@@ -1,16 +1,17 @@
 import { NextRequest } from 'next/server'
 import { groq, MODELS } from '@/lib/groq'
-import { conversationSystemPrompt } from '@/lib/prompts/oral'
-import type { ConversationMessage, IbTopic } from '@/lib/types'
+import { conversationSystemPrompt, openingTurnInstruction } from '@/lib/prompts/oral'
+import type { ConversationMessage, IbTopic, OralDifficulty } from '@/lib/types'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
 
 export async function POST(req: NextRequest) {
-  const { userMessage, history, topic, initial } = (await req.json()) as {
+  const { userMessage, history, topic, difficulty = 'medium', initial } = (await req.json()) as {
     userMessage?: string
     history: ConversationMessage[]
     topic: IbTopic
+    difficulty?: OralDifficulty
     initial?: boolean
   }
 
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
     // Opening turn — AI starts the conversation
     messages.push({
       role: 'user',
-      content: 'Por favor, comienza la conversación con una pregunta sobre el tema.',
+      content: openingTurnInstruction(difficulty),
     })
   } else if (userMessage) {
     messages.push({ role: 'user', content: userMessage })
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
   const stream = await groq.chat.completions.create({
     model: MODELS.conversation,
     messages: [
-      { role: 'system', content: conversationSystemPrompt(topic) },
+      { role: 'system', content: conversationSystemPrompt(topic, difficulty) },
       ...messages,
     ],
     max_tokens: 150,

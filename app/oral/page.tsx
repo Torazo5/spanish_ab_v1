@@ -10,8 +10,8 @@ import { MicrophoneButton } from '@/components/oral/MicrophoneButton'
 import { useMediaRecorder } from '@/hooks/useMediaRecorder'
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis'
 import { useOralSession } from '@/hooks/useOralSession'
-import { IB_TOPICS } from '@/lib/types'
-import type { ConversationMode, IbTopic } from '@/lib/types'
+import { IB_TOPICS, ORAL_DIFFICULTY_OPTIONS } from '@/lib/types'
+import type { ConversationMode, IbTopic, OralDifficulty } from '@/lib/types'
 
 export default function OralPage() {
   const [topic, setTopic] = useState<IbTopic>('school')
@@ -19,6 +19,7 @@ export default function OralPage() {
   const [showTranscript, setShowTranscript] = useState(true)
   const [speechMode, setSpeechMode] = useState<'natural' | 'strict'>('natural')
   const [conversationMode, setConversationMode] = useState<ConversationMode>('manual')
+  const [difficulty, setDifficulty] = useState<OralDifficulty>('medium')
   const [autoCollapse, setAutoCollapse] = useState(true)
   const [error, setError] = useState('')
 
@@ -28,14 +29,16 @@ export default function OralPage() {
   const topicRef = useRef(topic)
   const speechModeRef = useRef(speechMode)
   const conversationModeRef = useRef(conversationMode)
+  const difficultyRef = useRef(difficulty)
   const sessionRef = useRef(session)
 
   useEffect(() => {
     topicRef.current = topic
     speechModeRef.current = speechMode
     conversationModeRef.current = conversationMode
+    difficultyRef.current = difficulty
     sessionRef.current = session
-  }, [topic, speechMode, conversationMode, session])
+  }, [topic, speechMode, conversationMode, difficulty, session])
 
   const handleBlobReady = useCallback(async (blob: Blob) => {
     setError('')
@@ -43,6 +46,7 @@ export default function OralPage() {
       await sessionRef.current.processUserTurn(
         blob,
         topicRef.current,
+        difficultyRef.current,
         speechModeRef.current,
         conversationModeRef.current
       )
@@ -57,7 +61,7 @@ export default function OralPage() {
     setError('')
     setSessionStarted(true)
     try {
-      await session.startSession(topic, conversationMode)
+      await session.startSession(topic, difficulty, conversationMode)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to start session')
       setSessionStarted(false)
@@ -67,7 +71,7 @@ export default function OralPage() {
   const handleBeginAssistantTurn = useCallback(async () => {
     setError('')
     try {
-      await sessionRef.current.beginAssistantTurn(topicRef.current)
+      await sessionRef.current.beginAssistantTurn(topicRef.current, difficultyRef.current)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to generate Luis\'s reply')
     }
@@ -204,6 +208,36 @@ export default function OralPage() {
             </div>
 
             <div className="space-y-2">
+              <p className="text-xs font-medium text-zinc-400 flex items-center gap-1.5">
+                Difficulty
+                <span className="relative group">
+                  <Info className="w-3 h-3 text-zinc-500" />
+                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-[11px] text-zinc-300 leading-relaxed opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-10">
+                    A good answer on Medium is enough for a 7 in Spanish AB Initio.
+                  </span>
+                </span>
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {ORAL_DIFFICULTY_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setDifficulty(option.value)}
+                    className={`rounded-2xl border px-3 py-3 text-left transition-all active:scale-[0.99] ${
+                      difficulty === option.value
+                        ? 'border-emerald-400/40 bg-emerald-500/10 text-white shadow-[0_18px_35px_-28px_rgba(16,185,129,0.95)]'
+                        : 'border-zinc-800 bg-zinc-900/80 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
+                    }`}
+                  >
+                    <span className="block font-semibold">{option.label}</span>
+                    <span className="mt-1 block text-[11px] leading-relaxed text-zinc-400">
+                      {option.description}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <p className="text-xs font-medium text-zinc-400">Feedback strictness</p>
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -274,6 +308,9 @@ export default function OralPage() {
               </span>
               <span className="rounded-full border border-zinc-800 bg-zinc-900 px-2.5 py-1 text-[11px] font-medium text-zinc-300">
                 {conversationMode === 'manual' ? 'Manual replies' : 'Auto replies'}
+              </span>
+              <span className="rounded-full border border-zinc-800 bg-zinc-900 px-2.5 py-1 text-[11px] font-medium text-zinc-300">
+                {ORAL_DIFFICULTY_OPTIONS.find((option) => option.value === difficulty)?.label} difficulty
               </span>
             </div>
             <div className="flex flex-wrap items-start gap-3">

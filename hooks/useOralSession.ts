@@ -6,6 +6,7 @@ import type {
   IbTopic,
   ObserverFeedback,
   OralPhase,
+  OralDifficulty,
 } from '@/lib/types'
 
 interface OralSessionState {
@@ -149,10 +150,11 @@ export function useOralSession(
   )
 
   const startAssistantTurn = useCallback(
-    async (topic: IbTopic, options?: { initial?: boolean }) => {
+    async (topic: IbTopic, difficulty: OralDifficulty, options?: { initial?: boolean }) => {
       setPhase('ai-speaking')
       const text = await streamConversation({
         topic,
+        difficulty,
         history: historyRef.current,
         initial: options?.initial,
       })
@@ -164,7 +166,11 @@ export function useOralSession(
   )
 
   const startSession = useCallback(
-    async (topic: IbTopic, conversationMode: ConversationMode = 'auto') => {
+    async (
+      topic: IbTopic,
+      difficulty: OralDifficulty = 'medium',
+      conversationMode: ConversationMode = 'auto'
+    ) => {
       onStopSpeaking()
       abortRef.current?.abort()
       historyRef.current = []
@@ -176,7 +182,7 @@ export function useOralSession(
       }
 
       setState(createInitialState('ai-speaking'))
-      const text = await streamConversation({ topic, history: [], initial: true })
+      const text = await streamConversation({ topic, difficulty, history: [], initial: true })
       addMessage({ role: 'assistant', content: text, timestamp: Date.now() })
       await onSpeak(text)
       setPhase('waiting-for-user')
@@ -188,6 +194,7 @@ export function useOralSession(
     async (
       audioBlob: Blob,
       topic: IbTopic,
+      difficulty: OralDifficulty = 'medium',
       speechMode: 'natural' | 'strict' = 'natural',
       conversationMode: ConversationMode = 'auto'
     ) => {
@@ -232,6 +239,7 @@ export function useOralSession(
         streamConversation({
           history: currentHistory,
           topic,
+          difficulty,
         }),
         observerPromise,
       ])
@@ -245,8 +253,8 @@ export function useOralSession(
   )
 
   const beginAssistantTurn = useCallback(
-    async (topic: IbTopic) => {
-      await startAssistantTurn(topic, { initial: historyRef.current.length === 0 })
+    async (topic: IbTopic, difficulty: OralDifficulty = 'medium') => {
+      await startAssistantTurn(topic, difficulty, { initial: historyRef.current.length === 0 })
     },
     [startAssistantTurn]
   )
