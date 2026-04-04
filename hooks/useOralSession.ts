@@ -1,5 +1,6 @@
 'use client'
 import { useState, useCallback, useRef } from 'react'
+import { rewindLatestUserTurn } from '@/lib/oral-retry'
 import type {
   ConversationMessage,
   ConversationMode,
@@ -288,11 +289,37 @@ export function useOralSession(
     setState(createInitialState())
   }, [])
 
+  const retryLatestUserTurn = useCallback(() => {
+    onStopSpeaking()
+    abortRef.current?.abort()
+
+    const rewound = rewindLatestUserTurn({
+      history: historyRef.current,
+      feedbackHistory: state.feedbackHistory,
+      turnNumber: turnNumberRef.current,
+    })
+
+    if (!rewound.didRewind) return false
+
+    historyRef.current = rewound.history
+    turnNumberRef.current = rewound.turnNumber
+    setState((s) => ({
+      ...s,
+      history: rewound.history,
+      feedbackHistory: rewound.feedbackHistory,
+      turnNumber: rewound.turnNumber,
+      streamingText: '',
+      phase: 'waiting-for-user',
+    }))
+    return true
+  }, [onStopSpeaking, state.feedbackHistory])
+
   return {
     ...state,
     startSession,
     beginAssistantTurn,
     processUserTurn,
+    retryLatestUserTurn,
     resetSession,
   }
 }
