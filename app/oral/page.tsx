@@ -63,8 +63,9 @@ export default function OralPage() {
   const [error, setError] = useState('')
   const [guidanceReady, setGuidanceReady] = useState(false)
   const [guidedMode, setGuidedMode] = useState(false)
+  const [retryNudgeActive, setRetryNudgeActive] = useState(false)
 
-  const { speak, stop: stopSpeaking } = useSpeechSynthesis()
+  const { speak, stop: stopSpeaking, isSpeaking, isLoading } = useSpeechSynthesis()
   const session = useOralSession(speak, stopSpeaking)
 
   const topicRef = useRef(topic)
@@ -73,6 +74,7 @@ export default function OralPage() {
   const difficultyRef = useRef(difficulty)
   const sessionRef = useRef(session)
   const autoStartAttemptedRef = useRef(false)
+  const retryNudgeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     topicRef.current = topic
@@ -81,6 +83,14 @@ export default function OralPage() {
     difficultyRef.current = difficulty
     sessionRef.current = session
   }, [topic, speechMode, conversationMode, difficulty, session])
+
+  useEffect(() => {
+    return () => {
+      if (retryNudgeTimeoutRef.current) {
+        clearTimeout(retryNudgeTimeoutRef.current)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const completed = window.localStorage.getItem(ORAL_GUIDED_STORAGE_KEY) === 'true'
@@ -137,6 +147,22 @@ export default function OralPage() {
     void speak(message.content)
   }, [speak])
 
+  const handleRetryLatestUserTurn = useCallback(() => {
+    setError('')
+    setRetryNudgeActive(true)
+    if (retryNudgeTimeoutRef.current) {
+      clearTimeout(retryNudgeTimeoutRef.current)
+    }
+    retryNudgeTimeoutRef.current = setTimeout(() => {
+      setRetryNudgeActive(false)
+    }, 4000)
+
+    const latestAssistant = [...sessionRef.current.history].reverse().find((message) => message.role === 'assistant')
+    if (latestAssistant) {
+      void speak(latestAssistant.content)
+    }
+  }, [speak])
+
   const handleSkipGuided = useCallback(() => {
     finishGuidedMode()
     autoStartAttemptedRef.current = true
@@ -171,6 +197,11 @@ export default function OralPage() {
     setSessionStarted(false)
     setError('')
     autoStartAttemptedRef.current = false
+    setRetryNudgeActive(false)
+    if (retryNudgeTimeoutRef.current) {
+      clearTimeout(retryNudgeTimeoutRef.current)
+      retryNudgeTimeoutRef.current = null
+    }
   }
 
   const guidedStep = getGuidedOnboardingStep({
@@ -617,6 +648,8 @@ export default function OralPage() {
                 phase={session.phase}
                 onStartAssistantTurn={conversationMode === 'manual' ? handleBeginAssistantTurn : undefined}
                 onReplayAssistantMessage={handleReplayAssistantMessage}
+                onRetryLatestUserTurn={handleRetryLatestUserTurn}
+                canRetryLatestUserTurn={!guidedMode && session.feedbackHistory.length > 0 && session.phase === 'waiting-for-user'}
               />
             </div>
 
@@ -639,7 +672,8 @@ export default function OralPage() {
                 secondsLeft={recorder.secondsLeft}
                 onStart={recorder.startRecording}
                 onStop={recorder.stopRecording}
-                highlight={guidedMode && guidedStep === 'record'}
+                disabled={isSpeaking || isLoading}
+                highlight={(guidedMode && guidedStep === 'record') || retryNudgeActive}
               />
               {!guidedMode && conversationMode === 'manual' && session.phase === 'waiting-for-ai-start' && (
                 <Button

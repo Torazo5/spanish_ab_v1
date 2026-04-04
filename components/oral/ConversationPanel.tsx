@@ -11,6 +11,8 @@ interface Props {
   phase?: OralPhase
   onStartAssistantTurn?: () => void
   onReplayAssistantMessage?: (message: ConversationMessage) => void
+  onRetryLatestUserTurn?: () => void
+  canRetryLatestUserTurn?: boolean
 }
 
 export function ConversationPanel({
@@ -20,9 +22,12 @@ export function ConversationPanel({
   phase,
   onStartAssistantTurn,
   onReplayAssistantMessage,
+  onRetryLatestUserTurn,
+  canRetryLatestUserTurn = false,
 }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const isWaitingForManualStart = phase === 'waiting-for-ai-start' && Boolean(onStartAssistantTurn)
+  const latestUserIndex = [...history].map((msg, index) => ({ msg, index })).reverse().find(({ msg }) => msg.role === 'user')?.index
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -33,6 +38,7 @@ export function ConversationPanel({
       <div className="flex flex-col gap-4">
         {history.map((msg, i) => {
           const isUser = msg.role === 'user'
+          const isLatestUser = isUser && latestUserIndex === i
           const bubbleLabel = isUser ? 'You' : 'Luis'
           const bubbleContent =
             isUser && !showTranscript ? (
@@ -74,6 +80,14 @@ export function ConversationPanel({
                   )}
                 </div>
                 <div className={isUser && !showTranscript ? 'italic text-white/90' : ''}>{bubbleContent}</div>
+                {isLatestUser && canRetryLatestUserTurn && onRetryLatestUserTurn && (
+                  <button
+                    onClick={onRetryLatestUserTurn}
+                    className="mt-3 inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold text-white transition-colors hover:border-white/25 hover:bg-white/15"
+                  >
+                    Try one more answer
+                  </button>
+                )}
               </div>
             </div>
           )
