@@ -2,6 +2,7 @@
 import { useMemo, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import type { ObserverFeedback, GrammarError } from '@/lib/types'
+import { getFeedbackHeadline } from '@/lib/oral-feedback-summary'
 import { ErrorCard } from './ErrorCard'
 
 /**
@@ -103,6 +104,10 @@ export function ObserverPanel({ feedbackHistory, autoCollapse = false }: Props) 
         const visibleErrors = fb.errors.filter(
           (_, i) => !dismissed.has(`${fb.turnNumber}-${i}`)
         )
+        const headline = getFeedbackHeadline({
+          ...fb,
+          errors: visibleErrors,
+        })
 
         const toggleKey = `${feedbackHistory.length}-${fb.turnNumber}`
         const isExpanded = manualToggle[toggleKey] ?? (autoCollapse ? isCurrent : true)
@@ -144,6 +149,15 @@ export function ObserverPanel({ feedbackHistory, autoCollapse = false }: Props) 
 
             {isExpanded && (
               <>
+                {isCurrent && (
+                  <div className="rounded-lg border border-emerald-400/20 bg-emerald-500/10 p-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-emerald-300/80">
+                      {headline.title}
+                    </div>
+                    <p className="mt-1 text-sm leading-relaxed text-emerald-100">{headline.detail}</p>
+                  </div>
+                )}
+
                 {/* Original message with inline error highlights */}
                 {fb.originalMessage && (
                   <div className="bg-zinc-900/80 rounded-lg p-3">
