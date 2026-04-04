@@ -149,6 +149,7 @@ export default function OralPage() {
 
   const handleRetryLatestUserTurn = useCallback(() => {
     setError('')
+    stopSpeaking()
     setRetryNudgeActive(true)
     if (retryNudgeTimeoutRef.current) {
       clearTimeout(retryNudgeTimeoutRef.current)
@@ -156,12 +157,7 @@ export default function OralPage() {
     retryNudgeTimeoutRef.current = setTimeout(() => {
       setRetryNudgeActive(false)
     }, 4000)
-
-    const latestAssistant = [...sessionRef.current.history].reverse().find((message) => message.role === 'assistant')
-    if (latestAssistant) {
-      void speak(latestAssistant.content)
-    }
-  }, [speak])
+  }, [stopSpeaking])
 
   const handleSkipGuided = useCallback(() => {
     finishGuidedMode()
