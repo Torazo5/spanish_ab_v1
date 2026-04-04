@@ -9,9 +9,18 @@ interface Props {
   onStart: () => void
   onStop: () => void
   disabled?: boolean
+  highlight?: boolean
 }
 
-export function MicrophoneButton({ isRecording, phase, secondsLeft, onStart, onStop, disabled }: Props) {
+export function MicrophoneButton({
+  isRecording,
+  phase,
+  secondsLeft,
+  onStart,
+  onStop,
+  disabled,
+  highlight = false,
+}: Props) {
   const isProcessing = phase === 'transcribing' || phase === 'processing'
   const isWaitingForAiStart = phase === 'waiting-for-ai-start'
   const isWaiting = phase === 'waiting-for-user'
@@ -38,6 +47,7 @@ export function MicrophoneButton({ isRecording, phase, secondsLeft, onStart, onS
             ? 'bg-zinc-700 hover:bg-zinc-600'
             : 'bg-zinc-800 opacity-50 cursor-not-allowed'
           }
+          ${highlight ? 'ring-4 ring-emerald-300/30 ring-offset-4 ring-offset-zinc-950 shadow-[0_0_0_1px_rgba(110,231,183,0.2),0_0_40px_-10px_rgba(16,185,129,0.85)]' : ''}
           disabled:cursor-not-allowed
         `}
       >
