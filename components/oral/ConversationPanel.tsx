@@ -10,6 +10,7 @@ interface Props {
   showTranscript?: boolean
   phase?: OralPhase
   onStartAssistantTurn?: () => void
+  onReplayAssistantMessage?: (message: ConversationMessage) => void
 }
 
 export function ConversationPanel({
@@ -18,6 +19,7 @@ export function ConversationPanel({
   showTranscript = true,
   phase,
   onStartAssistantTurn,
+  onReplayAssistantMessage,
 }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const isWaitingForManualStart = phase === 'waiting-for-ai-start' && Boolean(onStartAssistantTurn)
@@ -54,13 +56,23 @@ export function ConversationPanel({
                     : 'rounded-bl-md border-white/10 bg-gradient-to-br from-zinc-800 via-zinc-900 to-black text-zinc-100'
                 }`}
               >
-                <span
-                  className={`mb-1.5 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] ${
-                    isUser ? 'bg-white/12 text-sky-100' : 'bg-white/6 text-zinc-400'
-                  }`}
-                >
-                  {bubbleLabel}
-                </span>
+                <div className="mb-1.5 flex items-center justify-between gap-3">
+                  <span
+                    className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] ${
+                      isUser ? 'bg-white/12 text-sky-100' : 'bg-white/6 text-zinc-400'
+                    }`}
+                  >
+                    {bubbleLabel}
+                  </span>
+                  {!isUser && onReplayAssistantMessage && (
+                    <button
+                      onClick={() => onReplayAssistantMessage(msg)}
+                      className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-medium text-zinc-300 transition-colors hover:border-emerald-400/40 hover:text-white"
+                    >
+                      Replay
+                    </button>
+                  )}
+                </div>
                 <div className={isUser && !showTranscript ? 'italic text-white/90' : ''}>{bubbleContent}</div>
               </div>
             </div>
