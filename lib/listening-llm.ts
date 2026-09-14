@@ -229,6 +229,8 @@ export async function generateListeningText({
           messages: [{ role: 'user', content: prompt }],
           max_tokens: config.maxTokens,
           temperature: config.temperature,
+          reasoning_effort: 'low',
+          include_reasoning: false,
         })
 
         const choice = response.choices[0]

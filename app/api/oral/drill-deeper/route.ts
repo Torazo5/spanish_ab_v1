@@ -35,6 +35,8 @@ Brief explanation: ${error.explanation}`
       ],
       max_tokens: 400,
       temperature: 0.3,
+      reasoning_effort: 'low',
+      include_reasoning: false,
     })
 
     const explanation = response.choices[0].message.content ?? ''

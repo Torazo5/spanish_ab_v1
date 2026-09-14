@@ -17,9 +17,9 @@ export const groq = new Proxy({} as Groq, {
 })
 
 export const MODELS = {
-  conversation: 'llama-3.1-8b-instant',  // fast, 14,400 req/day free
-  observer: 'llama-3.3-70b-versatile',   // quality, 1,000 req/day free
-  listening: 'llama-3.3-70b-versatile',
+  conversation: 'qwen/qwen3.8-27b',
+  observer: 'openai/gpt-oss-120b',
+  listening: 'openai/gpt-oss-120b',
   whisper: 'whisper-large-v3-turbo',
-  drillDeeper: 'llama-3.1-8b-instant',   // grammar explanations, free tier
+  drillDeeper: 'openai/gpt-oss-20b',
 } as const

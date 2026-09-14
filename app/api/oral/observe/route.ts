@@ -27,6 +27,8 @@ export async function POST(req: NextRequest) {
       ],
       max_tokens: 600,
       temperature: 0.3,
+      reasoning_effort: 'low',
+      include_reasoning: false,
     })
 
     const text = response.choices[0].message.content ?? ''

@@ -40,6 +40,9 @@ export async function POST(req: NextRequest) {
       ],
       max_tokens: 150,
       temperature: 0.9,
+      // Qwen supports a non-reasoning mode, keeping the short streaming turn
+      // dedicated to the Spanish reply instead of hidden reasoning tokens.
+      reasoning_effort: 'none',
       stream: true,
     })
 
